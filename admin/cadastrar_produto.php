@@ -235,14 +235,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
         
-        // Debug: mostrar dados do formulário antes do envio
-        document.querySelector('form').addEventListener('submit', function(e) {
-            console.log('Enviando formulário...');
-            const formData = new FormData(this);
-            for (let pair of formData.entries()) {
-                console.log(pair[0], pair[1]);
-            }
-        });
     </script>
 </body>
 </html>

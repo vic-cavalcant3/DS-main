@@ -34,7 +34,7 @@ try {
             <?php foreach ($produtos as $produto): ?>
             <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105">
                 <?php if (!empty($produto['imagem_principal'])): ?>
-                    <img src="<?= 'produtos/' . htmlspecialchars($produto['imagem_principal']) ?>" 
+                    <img src="/DS-main/client/src/produtos/<?= htmlspecialchars($produto['imagem_principal']) ?>" 
                          alt="<?= htmlspecialchars($produto['nome']) ?>" 
                          class="w-full h-64 object-cover">
                 <?php else: ?>

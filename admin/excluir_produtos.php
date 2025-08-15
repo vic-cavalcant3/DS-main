@@ -1,4 +1,5 @@
 <?php
+
 require 'conexao.php';
 
 if (!isset($_GET['id'])) {
@@ -23,7 +24,7 @@ try {
     $caminho_absoluto = dirname(__DIR__, 2) . DIRECTORY_SEPARATOR . 'client' . DIRECTORY_SEPARATOR . 'src' . DIRECTORY_SEPARATOR . 'produtos' . DIRECTORY_SEPARATOR . basename($img['url_imagem']);
     
     // Debug: veja o caminho gerado
-    // var_dump($caminho_absoluto);
+    var_dump($caminho_absoluto);
 
     if (file_exists($caminho_absoluto)) {
         unlink($caminho_absoluto); // Apaga o arquivo
