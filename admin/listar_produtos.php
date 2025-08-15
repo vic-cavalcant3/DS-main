@@ -34,7 +34,7 @@ try {
             <?php foreach ($produtos as $produto): ?>
             <div class="bg-white rounded-lg shadow-lg overflow-hidden transition-transform hover:scale-105">
                 <?php if (!empty($produto['imagem_principal'])): ?>
-                    <img src="<?= htmlspecialchars($produto['imagem_principal']) ?>" 
+                    <img src="<?= 'produtos/' . htmlspecialchars($produto['imagem_principal']) ?>" 
                          alt="<?= htmlspecialchars($produto['nome']) ?>" 
                          class="w-full h-64 object-cover">
                 <?php else: ?>
@@ -55,7 +55,7 @@ try {
                                class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition">
                                 Editar
                             </a>
-                            <a href="excluir_produtos.php?id=<?= $produto['id'] ?>" 
+                            <a href="excluir_produto.php?id=<?= $produto['id'] ?>" 
                                class="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
                                onclick="return confirm('Tem certeza que deseja excluir?')">
                                 Excluir
