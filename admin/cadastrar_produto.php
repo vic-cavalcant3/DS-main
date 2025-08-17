@@ -2,7 +2,7 @@
 require 'conexao.php';
 
 // Configurações de upload
-$uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/client/src/produtos/';
+$uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/admin/src/uploads/';
 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 $maxSize = 2 * 1024 * 1024; // 2MB
 
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 
                 if (move_uploaded_file($tmpName, $destino)) {
                     // Caminho relativo para salvar no banco
-                    $imagens[] = 'client/src/produtos/' . $uniqueFileName;
+                    $imagens[] = 'admin/src/uploads/' . $uniqueFileName;
                 } else {
                     throw new Exception("Erro ao mover arquivo: " . $fileName);
                 }
@@ -119,122 +119,212 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <title>Cadastrar Camiseta</title>
+    <title>Cadastrar Produto - Flamma Admin</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .sidebar {
+            transition: all 0.3s;
+            background-color: #111827;
+        }
+        .sidebar-link {
+            transition: all 0.2s;
+        }
+        .sidebar-link:hover {
+            background-color: #1f2937;
+        }
+        .sidebar-link.active {
+            background-color: #1f2937;
+            border-left: 4px solid #ef4444;
+        }
+        .file-upload {
+            border: 2px dashed #d1d5db;
+            transition: all 0.3s;
+        }
+        .file-upload:hover {
+            border-color: #9ca3af;
+        }
+    </style>
 </head>
-<body class="bg-gray-100 p-8">
-    <div class="max-w-4xl mx-auto bg-white p-6 rounded-lg shadow">
-        <h1 class="text-2xl font-bold mb-6">Cadastrar Nova Camiseta</h1>
-        
-        <!-- Formulário com debug adicional -->
-        <form method="POST" enctype="multipart/form-data">
-            <!-- Campos do produto -->
-            <div class="mb-4">
-                <label class="block text-gray-700 mb-2">Nome da Camiseta</label>
-                <input type="text" name="nome" class="w-full p-2 border rounded" required>
+<body class="bg-gray-50 font-sans">
+    <div class="flex h-screen">
+        <!-- Menu Lateral -->
+        <div class="sidebar w-64 fixed h-full text-white">
+            <div class="p-4 border-b border-gray-700 flex items-center">
+                <!-- <img src="/ds-main/client/src/Flamma-logo.png" alt="Logo" class="h-10 mr-3"> -->
+                <h1 class="text-xl font-bold">Flamma Admin</h1>
             </div>
             
-            <div class="mb-4">
-                <label class="block text-gray-700 mb-2">Descrição</label>
-                <textarea name="descricao" class="w-full p-2 border rounded h-24"></textarea>
-            </div>
-            
-            <div class="grid grid-cols-2 gap-4 mb-4">
-                <div>
-                    <label class="block text-gray-700 mb-2">Preço (R$)</label>
-                    <input type="number" step="0.01" name="preco" class="w-full p-2 border rounded" required>
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <a href="cadastrar_produto.php" class="sidebar-link active flex items-center p-3 rounded">
+                            <i class="fas fa-tshirt mr-3"></i>
+                            Novo Produto
+                        </a>
+                    </li>
+                   
+                    <li>
+                        <a href="listar_produtos.php" class="sidebar-link flex items-center p-3 rounded">
+                            <i class="fas fa-shopping-cart mr-3"></i>
+                            Produtos
+                        </a>
+                    </li>
+
+                                    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+                    <a href="#" class="flex items-center text-red-400 p-2 rounded hover:bg-gray-800">
+                        <i class="fas fa-sign-out-alt mr-2"></i>
+                        Sair
+                    </a>
                 </div>
-                <div>
-                    <label class="block text-gray-700 mb-2">Tags (separadas por vírgula)</label>
-                    <input type="text" name="tags" class="w-full p-2 border rounded" placeholder="Ex: Naruto, Anime, Uzumaki">
-                </div>
-            </div>
-            
-            <!-- Seção de upload de imagens com melhor validação -->
-            <div class="mb-6">
-                <label class="block text-gray-700 mb-2">Imagens do Produto</label>
-                <p class="text-sm text-gray-600 mb-2">Formatos aceitos: JPEG, PNG, WebP | Tamanho máximo: 2MB por imagem</p>
-                <div id="imagens-container">
-                    <input type="file" name="imagens[]" accept="image/jpeg, image/png, image/webp" class="w-full p-2 border rounded mb-2" onchange="validarImagem(this)">
-                </div>
-                <button type="button" onclick="adicionarCampoImagem()" class="bg-gray-200 px-4 py-2 rounded mt-2">
-                    + Adicionar outra imagem
-                </button>
-            </div>
-            
-            <!-- Seção de estoque -->
-            <div class="mb-6">
-                <h3 class="font-bold mb-3">Estoque por Tamanho</h3>
-                <div class="grid grid-cols-3 gap-4">
-                    <?php
-                    $tamanhos = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
-                    foreach ($tamanhos as $tamanho) {
-                        echo '
-                        <div>
-                            <label class="block text-gray-700 mb-1">Tamanho ' . $tamanho . '</label>
-                            <input type="number" name="estoque_' . $tamanho . '" class="w-full p-2 border rounded" value="0" min="0">
-                        </div>';
-                    }
-                    ?>
-                </div>
-            </div>
-            
-            <button type="submit" class="bg-red-600 text-white px-6 py-2 rounded hover:bg-red-700">
-                Cadastrar Produto
-            </button>
-        </form>
-        
-        <!-- Debug: mostrar informações do PHP -->
-        <?php if (isset($_POST['nome'])): ?>
-        <div class="mt-6 p-4 bg-blue-100 rounded">
-            <h3 class="font-bold">Debug Info:</h3>
-            <p>Upload máximo PHP: <?= ini_get('upload_max_filesize') ?></p>
-            <p>Post máximo PHP: <?= ini_get('post_max_size') ?></p>
-            <p>Diretório de upload existe: <?= is_dir($uploadDir) ? 'Sim' : 'Não' ?></p>
-            <p>Diretório tem permissão de escrita: <?= is_writable(dirname($uploadDir)) ? 'Sim' : 'Não' ?></p>
+
+                </ul>
+            </nav>
         </div>
-        <?php endif; ?>
+
+        <!-- Conteúdo Principal -->
+        <div class="ml-64 flex-1 p-8 overflow-auto">
+            <div class="flex justify-between items-center mb-8">
+                <h1 class="text-2xl font-bold text-gray-800">Cadastrar Novo Produto</h1>
+                <a href="listar_produtos.php" 
+                   class="text-gray-600 hover:text-gray-800 flex items-center">
+                    <i class="fas fa-arrow-left mr-2"></i> Voltar
+                </a>
+            </div>
+            
+            <!-- Mensagens de Erro -->
+            <?php if (isset($e)): ?>
+                <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-6">
+                    <?= htmlspecialchars($e->getMessage()) ?>
+                </div>
+            <?php endif; ?>
+            
+            <!-- Formulário -->
+            <form method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-md p-6">
+                <!-- Seção Básica -->
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Informações Básicas</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 mb-2">Nome do Produto*</label>
+                            <input type="text" name="nome" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Preço (R$)*</label>
+                            <input type="number" step="0.01" name="preco" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 mb-2">Descrição</label>
+                            <textarea name="descricao" rows="3" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 mb-2">Tags</label>
+                            <input type="text" name="tags" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Anime, Naruto, Dragon Ball">
+                            <p class="text-sm text-gray-500 mt-1">Separe as tags por vírgula</p>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Seção Imagens -->
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Imagens do Produto</h2>
+                    <div id="imagens-container">
+                        <div class="file-upload mb-4 rounded-lg p-6 text-center">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-gray-600 mb-2">Arraste e solte imagens aqui ou clique para selecionar</p>
+                            <input type="file" name="imagens[]" accept="image/jpeg, image/png, image/webp" class="hidden" id="file-input" multiple>
+                            <button type="button" onclick="document.getElementById('file-input').click()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg mt-2">
+                                Selecionar Arquivos
+                            </button>
+                            <p class="text-xs text-gray-500 mt-3">Formatos aceitos: JPEG, PNG, WebP | Máx. 2MB cada</p>
+                        </div>
+                    </div>
+                    <div id="preview-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4"></div>
+                </div>
+                
+                <!-- Seção Estoque -->
+                <div class="mb-8">
+                    <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Estoque</h2>
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <?php
+                        $tamanhos = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
+                        foreach ($tamanhos as $tamanho): ?>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Tamanho <?= $tamanho ?></label>
+                            <input type="number" name="estoque_<?= $tamanho ?>" class="w-full p-3 border rounded-lg" value="0" min="0">
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                
+                <!-- Botão Submit -->
+                <div class="flex justify-end">
+                    <button type="submit" class="bg-red-600 hover:bg-red-700 text-white px-8 py-3 rounded-lg font-semibold flex items-center">
+                        <i class="fas fa-save mr-2"></i> Salvar Produto
+                    </button>
+                </div>
+            </form>
+        </div>
     </div>
 
     <script>
-        function adicionarCampoImagem() {
-            const container = document.getElementById('imagens-container');
-            const newInput = document.createElement('input');
-            newInput.type = 'file';
-            newInput.name = 'imagens[]';
-            newInput.accept = 'image/jpeg, image/png, image/webp';
-            newInput.className = 'w-full p-2 border rounded mb-2';
-            newInput.onchange = function() { validarImagem(this); };
-            container.appendChild(newInput);
-        }
+        // Gerenciamento de upload de imagens
+        const fileInput = document.getElementById('file-input');
+        const previewContainer = document.getElementById('preview-container');
         
-        function validarImagem(input) {
-            const file = input.files[0];
-            if (file) {
-                // Validar tamanho (2MB)
-                if (file.size > 2 * 1024 * 1024) {
-                    alert('Arquivo muito grande! Máximo 2MB.');
-                    input.value = '';
-                    return;
-                }
-                
-                // Validar tipo
-                const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
-                if (!allowedTypes.includes(file.type)) {
-                    alert('Tipo de arquivo não permitido! Use JPEG, PNG ou WebP.');
-                    input.value = '';
-                    return;
-                }
-                
-                console.log('Arquivo válido:', file.name, file.type, file.size);
+        fileInput.addEventListener('change', function() {
+            previewContainer.innerHTML = '';
+            
+            if (this.files) {
+                Array.from(this.files).forEach(file => {
+                    if (file.type.startsWith('image/') && file.size <= 2 * 1024 * 1024) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const preview = document.createElement('div');
+                            preview.className = 'relative';
+                            preview.innerHTML = `
+                                <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                                <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            `;
+                            preview.querySelector('button').addEventListener('click', () => {
+                                preview.remove();
+                                // Aqui você pode implementar a remoção do arquivo da lista
+                            });
+                            previewContainer.appendChild(preview);
+                        }
+                        
+                        reader.readAsDataURL(file);
+                    }
+                });
             }
-        }
+        });
         
+        // Drag and drop
+        const uploadArea = document.querySelector('.file-upload');
+        
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('border-red-400', 'bg-red-50');
+        });
+        
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('border-red-400', 'bg-red-50');
+        });
+        
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('border-red-400', 'bg-red-50');
+            fileInput.files = e.dataTransfer.files;
+            const event = new Event('change');
+            fileInput.dispatchEvent(event);
+        });
     </script>
 </body>
 </html>
