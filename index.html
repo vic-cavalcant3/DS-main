@@ -64,16 +64,35 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+        
+        /* Gradiente de conexão entre header e hero */
+        .header-hero-connector {
+            position: relative;
+            height: 30px;
+            width: 100%;
+            background: linear-gradient(to bottom, 
+                rgba(0, 0, 0, 1) 0%, 
+                rgba(0, 0, 0, 0.8) 40%,
+                rgba(0, 0, 0, 0.4) 70%,
+                rgba(0, 0, 0, 0) 100%);
+            z-index: 5;
+            margin-top: -1px;
+        }
+        
+        /* Ajuste na hero section para melhor integração */
+        .hero-section {
+            margin-top: -40px;
+        }
     </style>
 </head>
 
 <body class="bg-gray-50">
     <!-- Top Announcement Bar -->
-    <div class="bg-red-600 text-white text-center py-2 px-4 text-sm font-medium">
+    <!-- <div class="bg-red-600 text-white text-center py-2 px-4 text-sm font-medium">
         FRETE GRÁTIS PARA COMPRAS ACIMA DE R$150 | CUPOM: FLAMMA10
-    </div>
+    </div> -->
 
-       <!-- Navigation -->
+    <!-- Navigation -->
     <nav class="bg-black sticky top-0 z-50 shadow-md" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
@@ -139,83 +158,43 @@
         </div>
     </nav>
 
+    <!-- Elemento gradiente de conexão -->
+    <div class="header-hero-connector"></div>
+
     <!-- Hero Section -->
-  <section class="split-hero text-white">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12 md:py-20">
-            <div class="flex flex-col md:flex-row items-center gap-8 md:gap-12">
-                <!-- Text Section -->
-                <div class="md:w-1/2 space-y-6">
-                    <h1 class="text-4xl md:text-5xl font-bangers">
-                        <span class="text-red-500">CAMISETAS OVERZIDSED</span><br>
-                        COM O MELHOR TECIDO
-                    </h1>
-                    <p class="text-lg md:text-xl text-gray-300">
-                        Feitas para fãs que exigem qualidade e conforto. Nossas camisetas combinam designs incríveis com tecidos premium que duram.
-                    </p>
-                    <div class="flex flex-col sm:flex-row gap-4">
-                        <a href="#" class="bg-red-600 hover:bg-red-700 text-white px-6 py-3 rounded-md font-medium transition duration-300 text-center">
-                            COMPRAR AGORA
-                        </a>
-                        <a href="#" class="border-2 border-white hover:border-red-500 text-white px-6 py-3 rounded-md font-medium transition duration-300 hover:text-red-400 text-center">
-                            VER COLECÃO
-                        </a>
-                    </div>
-                    
-                    <div class="flex items-center gap-4 pt-4">
-                        <div class="flex -space-x-2">
-                            <img class="h-10 w-10 rounded-full border-2 border-white" src="https://randomuser.me/api/portraits/women/12.jpg" alt="Cliente 1">
-                            <img class="h-10 w-10 rounded-full border-2 border-white" src="https://randomuser.me/api/portraits/men/32.jpg" alt="Cliente 2">
-                            <img class="h-10 w-10 rounded-full border-2 border-white" src="https://randomuser.me/api/portraits/women/44.jpg" alt="Cliente 3">
-                        </div>
-                        <div>
-                            <p class="text-sm font-medium">+5.000 clientes satisfeitos</p>
-                            <div class="flex text-yellow-400 text-sm">
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star"></i>
-                                <i class="fas fa-star-half-alt"></i>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Image Section -->
-                <div class="md:w-1/2 flex justify-center">
-                    <div class="image-frame w-full max-w-md aspect-square">
-                        <img src="https://images.unsplash.com/photo-1620799140408-edc6dcb6d633?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1072&q=80" 
-                             alt="Camiseta Overzidsed Flamma" 
-                             class="w-full h-full object-cover">
-                    </div>
-                </div>
+    <section class="hero-section relative bg-black text-white overflow-hidden">
+        <!-- Fundo com gradiente e textura -->
+        <div class="absolute inset-0">
+            <div class="absolute inset-0 bg-gradient-to-br from-black via-gray-900 to-red-900 opacity-80"></div>
+            <img src="https://images.unsplash.com/photo-1606112219348-204d7d8b94ee?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80" 
+                alt="Camisetas Anime" 
+                class="w-full h-full object-cover mix-blend-overlay opacity-60">
+        </div>
+
+        <!-- Conteúdo -->
+        <div class="relative z-10 flex flex-col items-center justify-center text-center px-6 py-24 lg:py-40">
+            <h1 class="text-4xl md:text-6xl font-bold tracking-tight">
+                <span class="text-white">FLAMMA</span> 
+                <span class="text-red-500">INDEX</span>
+            </h1>
+            <p class="mt-6 max-w-2xl text-lg md:text-xl text-gray-300">
+                Camisetas de Anime com estilo único e qualidade premium.
+            </p>
+            <div class="mt-8 flex gap-4">
+            <a href="#produtos" 
+                class="px-6 py-3 rounded-2xl bg-red-600 hover:bg-red-700 transition font-medium">
+                Ver Camisetas
+            </a>
+            <a href="#sobre" 
+                class="px-6 py-3 rounded-2xl border border-white/30 hover:bg-white/10 transition font-medium">
+                Sobre a Loja
+            </a>
             </div>
         </div>
     </section>
 
-    <!-- Product Filters -->
-    <section class="py-6 bg-white border-b border-gray-200">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex flex-col md:flex-row justify-between items-center">
-                <div class="mb-4 md:mb-0">
-                    <h2 class="text-xl font-bold text-gray-900">TODAS AS CAMISETAS</h2>
-                </div>
-                <div class="flex items-center space-x-4">
-                    <div class="relative">
-                        <select class="block appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500">
-                            <option>Ordenar por</option>
-                            <option>Mais recentes</option>
-                            <option>Preço: menor para maior</option>
-                            <option>Preço: maior para menor</option>
-                            <option>Mais populares</option>
-                        </select>
-                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
+
+
 
     <!-- Products Grid -->
     <section class="py-12 bg-gray-50">
