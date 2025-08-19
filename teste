@@ -1,38 +1,194 @@
-<div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                <!-- Product 1 -->
-                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Flamma | Camisetas de Anime</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Bangers&family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            scroll-behavior: smooth;
+        }
+        
+        .font-bangers {
+            font-family: 'Bangers', cursive;
+            letter-spacing: 1px;
+        }
+        
+        .hero-gradient {
+            background: linear-gradient(135deg, #111827 0%, #1f2937 100%);
+        }
+        
+        .product-card {
+            transition: all 0.3s ease;
+        }
+        
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link:hover::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background-color: #ef4444;
+        }
+        
+        .color-option {
+            transition: all 0.2s ease;
+        }
+        
+        .color-option.selected {
+            border: 2px solid #000;
+            transform: scale(1.1);
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.5s ease-in;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+</head>
+
+<body class="bg-gray-50">
+    <!-- Top Announcement Bar -->
+    <div class="bg-red-600 text-white text-center py-2 px-4 text-sm font-medium">
+        FRETE GRÁTIS PARA COMPRAS ACIMA DE R$150 | CUPOM: FLAMMA10
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-black sticky top-0 z-50 shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <!-- Logo -->
+                <div class="flex-shrink-0 flex items-center">
+                    <a href="#" class="text-2xl font-bold text-gray-900 hover:opacity-90 transition-opacity">
+                        <span class="text-white text-3xl font-bangers">FLAMMA</span>
+                    </a>
+                </div>
+
+                <!-- Right Icons -->
+                <div class="flex items-center space-x-4">
+                    <button class="text-white hover:text-red-500 transition-colors duration-200">
+                        <i class="fas fa-search text-lg"></i>
+                    </button>
+                    <button class="text-white hover:text-red-500 transition-colors duration-200">
+                        <i class="far fa-user text-lg"></i>
+                    </button>
+                    <button id="cart-button" class="text-white hover:text-red-500 transition-colors duration-200 relative">
+                        <i class="fas fa-shopping-bag text-lg"></i>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="relative bg-black overflow-hidden">
+        <div class="absolute inset-0 z-0 opacity-50">
+            <img src="https://images.unsplash.com/photo-1633613286848-e6f43bbafb8d?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1170&q=80" 
+                 alt="Anime Collage" class="w-full h-full object-cover">
+        </div>
+
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20 md:py-28 relative z-10">
+            <div class="text-center">
+                <h1 class="text-4xl md:text-6xl font-bangers text-white mb-6">
+                    <span class="text-red-500">CAMISETAS</span> DE <span class="text-red-500">ANIME</span>
+                </h1>
+                <p class="text-lg md:text-xl text-gray-300 mb-8 max-w-2xl mx-auto">
+                    Designs exclusivos para verdadeiros fãs
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- Product Filters -->
+    <section class="py-6 bg-white border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col md:flex-row justify-between items-center">
+                <div class="mb-4 md:mb-0">
+                    <h2 class="text-xl font-bold text-gray-900">TODAS AS CAMISETAS</h2>
+                </div>
+                <div class="flex items-center space-x-4">
                     <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1584917865442-de89df76afd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=735&q=80"
-                            alt="Pro Jersey" class="w-full h-64 object-cover">
+                        <select class="block appearance-none bg-white border border-gray-300 text-gray-700 py-2 px-4 pr-8 rounded leading-tight focus:outline-none focus:border-gray-500">
+                            <option>Ordenar por</option>
+                            <option>Mais recentes</option>
+                            <option>Preço: menor para maior</option>
+                            <option>Preço: maior para menor</option>
+                            <option>Mais populares</option>
+                        </select>
+                        <div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-2 text-gray-700">
+                            <i class="fas fa-chevron-down"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Products Grid -->
+    <section class="py-12 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div id="produtos-container" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <!-- Produto 1 - Demon Slayer -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative group">
+                        <!-- Imagem principal (preta) -->
+                        <img src="https://i.imgur.com/JzLQhB3.jpg" alt="Camiseta Demon Slayer Preta" class="w-full h-80 object-cover">
+                        <!-- Imagem hover (branca) -->
+                        <img src="https://i.imgur.com/8mZxylT.jpg" alt="Camiseta Demon Slayer Branca" class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="absolute top-2 right-2">
                             <button class="bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                 <i class="far fa-heart text-gray-700"></i>
                             </button>
                         </div>
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-                            <span class="text-white text-sm font-medium">NEW</span>
-                        </div>
                     </div>
                     <div class="p-4">
-                        <h3 class="font-medium text-gray-900 mb-1">Pro Performance Jersey</h3>
-                        <p class="text-gray-500 text-sm mb-2">Men's Basketball</p>
+                        <h3 class="font-medium text-gray-900 mb-1">Demon Slayer</h3>
+                        <p class="text-gray-500 text-sm mb-3">Estampa frontal</p>
+                        
+                        <!-- Opções de cor -->
+                        <div class="flex space-x-2 mb-3">
+                            <div class="color-option selected w-6 h-6 rounded-full bg-black border-2 border-gray-300 cursor-pointer" data-color="black"></div>
+                            <div class="color-option w-6 h-6 rounded-full bg-white border-2 border-gray-300 cursor-pointer" data-color="white"></div>
+                        </div>
+                        
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-gray-900">$89.99</span>
-                            <button
-                                class="add-to-cart bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
-                                data-id="1" data-name="Pro Performance Jersey" data-price="89.99"
-                                data-image="https://images.unsplash.com/photo-1584917865442-de89df76afd3?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=735&q=80">
-                                Add to Cart
+                            <span class="font-bold text-gray-900">R$69,90</span>
+                            <button class="add-to-cart bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
+                                data-id="1" 
+                                data-name="Camiseta Demon Slayer" 
+                                data-price="69.90">
+                                Adicionar
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Product 2 -->
-                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1065&q=80"
-                            alt="Elite Shoes" class="w-full h-64 object-cover">
+                <!-- Produto 2 - Attack on Titan -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative group">
+                        <img src="https://i.imgur.com/5zJgZyV.jpg" alt="Camiseta Attack on Titan Preta" class="w-full h-80 object-cover">
+                        <img src="https://i.imgur.com/3qKQ2Zr.jpg" alt="Camiseta Attack on Titan Branca" class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="absolute top-2 right-2">
                             <button class="bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                 <i class="far fa-heart text-gray-700"></i>
@@ -40,25 +196,31 @@
                         </div>
                     </div>
                     <div class="p-4">
-                        <h3 class="font-medium text-gray-900 mb-1">Elite Dunk Shoes</h3>
-                        <p class="text-gray-500 text-sm mb-2">Men's Basketball</p>
+                        <h3 class="font-medium text-gray-900 mb-1">Attack on Titan</h3>
+                        <p class="text-gray-500 text-sm mb-3">Estampa completa</p>
+                        
+                        <div class="flex space-x-2 mb-3">
+                            <div class="color-option selected w-6 h-6 rounded-full bg-black border-2 border-gray-300 cursor-pointer" data-color="black"></div>
+                            <div class="color-option w-6 h-6 rounded-full bg-white border-2 border-gray-300 cursor-pointer" data-color="white"></div>
+                        </div>
+                        
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-gray-900">$129.99</span>
-                            <button
-                                class="add-to-cart bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
-                                data-id="2" data-name="Elite Dunk Shoes" data-price="129.99"
-                                data-image="https://images.unsplash.com/photo-1600269452121-4f2416e55c28?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1065&q=80">
-                                Add to Cart
+                            <span class="font-bold text-gray-900">R$79,90</span>
+                            <button class="add-to-cart bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
+                                data-id="2" 
+                                data-name="Camiseta Attack on Titan" 
+                                data-price="79.90">
+                                Adicionar
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Product 3 -->
-                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1527719327859-c6ce80353573?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1084&q=80"
-                            alt="Game Shorts" class="w-full h-64 object-cover">
+                <!-- Produto 3 - Naruto -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative group">
+                        <img src="https://i.imgur.com/JzLQhB3.jpg" alt="Camiseta Naruto Preta" class="w-full h-80 object-cover">
+                        <img src="https://i.imgur.com/8mZxylT.jpg" alt="Camiseta Naruto Branca" class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="absolute top-2 right-2">
                             <button class="bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                 <i class="far fa-heart text-gray-700"></i>
@@ -66,45 +228,375 @@
                         </div>
                     </div>
                     <div class="p-4">
-                        <h3 class="font-medium text-gray-900 mb-1">Game Day Shorts</h3>
-                        <p class="text-gray-500 text-sm mb-2">Men's Basketball</p>
+                        <h3 class="font-medium text-gray-900 mb-1">Naruto Shippuden</h3>
+                        <p class="text-gray-500 text-sm mb-3">Estampa minimalista</p>
+                        
+                        <div class="flex space-x-2 mb-3">
+                            <div class="color-option selected w-6 h-6 rounded-full bg-black border-2 border-gray-300 cursor-pointer" data-color="black"></div>
+                            <div class="color-option w-6 h-6 rounded-full bg-white border-2 border-gray-300 cursor-pointer" data-color="white"></div>
+                        </div>
+                        
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-gray-900">$49.99</span>
-                            <button
-                                class="add-to-cart bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
-                                data-id="3" data-name="Game Day Shorts" data-price="49.99"
-                                data-image="https://images.unsplash.com/photo-1527719327859-c6ce80353573?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1084&q=80">
-                                Add to Cart
+                            <span class="font-bold text-gray-900">R$74,90</span>
+                            <button class="add-to-cart bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
+                                data-id="3" 
+                                data-name="Camiseta Naruto Shippuden" 
+                                data-price="74.90">
+                                Adicionar
                             </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Product 4 -->
-                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md transition duration-300">
-                    <div class="relative">
-                        <img src="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80"
-                            alt="Shooting Sleeve" class="w-full h-64 object-cover">
+                <!-- Produto 4 - One Piece -->
+                <div class="product-card bg-white rounded-lg overflow-hidden shadow-md">
+                    <div class="relative group">
+                        <img src="https://i.imgur.com/5zJgZyV.jpg" alt="Camiseta One Piece Preta" class="w-full h-80 object-cover">
+                        <img src="https://i.imgur.com/3qKQ2Zr.jpg" alt="Camiseta One Piece Branca" class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
                         <div class="absolute top-2 right-2">
                             <button class="bg-white rounded-full p-2 shadow-md hover:bg-gray-100">
                                 <i class="far fa-heart text-gray-700"></i>
                             </button>
                         </div>
-                        <div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black to-transparent p-4">
-                            <span class="text-white text-sm font-medium">BESTSELLER</span>
-                        </div>
                     </div>
                     <div class="p-4">
-                        <h3 class="font-medium text-gray-900 mb-1">Compression Shooting Sleeve</h3>
-                        <p class="text-gray-500 text-sm mb-2">Accessories</p>
+                        <h3 class="font-medium text-gray-900 mb-1">One Piece</h3>
+                        <p class="text-gray-500 text-sm mb-3">Estampa traseira</p>
+                        
+                        <div class="flex space-x-2 mb-3">
+                            <div class="color-option selected w-6 h-6 rounded-full bg-black border-2 border-gray-300 cursor-pointer" data-color="black"></div>
+                            <div class="color-option w-6 h-6 rounded-full bg-white border-2 border-gray-300 cursor-pointer" data-color="white"></div>
+                        </div>
+                        
                         <div class="flex justify-between items-center">
-                            <span class="font-bold text-gray-900">$24.99</span>
-                            <button
-                                class="add-to-cart bg-red-500 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
-                                data-id="4" data-name="Compression Shooting Sleeve" data-price="24.99"
-                                data-image="https://images.unsplash.com/photo-1600185365483-26d7a4cc7519?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1025&q=80">
-                                Add to Cart
+                            <span class="font-bold text-gray-900">R$69,90</span>
+                            <button class="add-to-cart bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
+                                data-id="4" 
+                                data-name="Camiseta One Piece" 
+                                data-price="69.90">
+                                Adicionar
                             </button>
                         </div>
                     </div>
                 </div>
+            </div>
+
+            <!-- Paginação -->
+            <div class="mt-12 flex justify-center">
+                <nav class="inline-flex rounded-md shadow">
+                    <a href="#" class="px-3 py-2 rounded-l-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                        <i class="fas fa-chevron-left"></i>
+                    </a>
+                    <a href="#" class="px-4 py-2 border-t border-b border-gray-300 bg-white text-gray-700 font-medium hover:bg-gray-50">1</a>
+                    <a href="#" class="px-4 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">2</a>
+                    <a href="#" class="px-4 py-2 border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">3</a>
+                    <a href="#" class="px-3 py-2 rounded-r-md border border-gray-300 bg-white text-gray-500 hover:bg-gray-50">
+                        <i class="fas fa-chevron-right"></i>
+                    </a>
+                </nav>
+            </div>
+        </div>
+    </section>
+
+    <!-- Newsletter -->
+    <section class="py-12 bg-gray-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h2 class="text-2xl font-bold mb-4">JUNTE-SE À COMUNIDADE FLAMMA</h2>
+            <p class="text-gray-300 mb-6 max-w-2xl mx-auto">Receba novidades, lançamentos exclusivos e ofertas especiais diretamente no seu e-mail.</p>
+            <div class="max-w-md mx-auto flex">
+                <input type="email" placeholder="Seu melhor e-mail" class="px-4 py-3 rounded-l-md w-full text-gray-900 focus:outline-none">
+                <button class="bg-red-600 hover:bg-red-700 px-6 py-3 rounded-r-md font-medium transition duration-300">
+                    Assinar
+                </button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-black text-white pt-12 pb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">FLAMMA</h3>
+                    <p class="text-gray-400 text-sm">Camisetas premium de anime para verdadeiros fãs.</p>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">ATENDIMENTO</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Central de Ajuda</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Trocas e Devoluções</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Entregas</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">SOBRE NÓS</h3>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Nossa História</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Termos de Serviço</a></li>
+                        <li><a href="#" class="text-gray-400 hover:text-white text-sm">Política de Privacidade</a></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">REDES SOCIAIS</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-instagram text-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-twitter text-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-facebook-f text-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-white"><i class="fab fa-tiktok text-lg"></i></a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-6 text-center">
+                <p class="text-gray-400 text-sm">© 2023 Flamma. Todos os direitos reservados.</p>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Shopping Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 overflow-y-auto">
+        <div class="p-6">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-xl font-bold">Seu Carrinho</h2>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+
+            <div id="cart-items" class="mb-6 space-y-4">
+                <!-- Cart items will be dynamically inserted here -->
+                <div class="text-center py-8 text-gray-500" id="empty-cart-message">
+                    <i class="fas fa-shopping-bag text-4xl mb-4 text-gray-300"></i>
+                    <p>Seu carrinho está vazio</p>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-200 pt-4">
+                <div class="flex justify-between mb-2">
+                    <span class="text-gray-600">Subtotal</span>
+                    <span id="cart-subtotal" class="font-medium">R$0,00</span>
+                </div>
+                <div class="flex justify-between mb-4">
+                    <span class="text-gray-600">Frete</span>
+                    <span class="font-medium">Calculado no checkout</span>
+                </div>
+                <button id="checkout-button"
+                    class="w-full bg-red-600 text-white py-3 rounded-md font-medium hover:bg-red-700 transition duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                    disabled>
+                    Finalizar Compra
+                </button>
+                <div class="mt-4 text-center">
+                    <a href="#" class="text-red-600 text-sm font-medium hover:text-red-700">Continuar Comprando</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Overlay for cart -->
+    <div id="cart-overlay" class="fixed inset-0 bg-black bg-opacity-50 z-40 hidden"></div>
+
+    <script>
+        // Mobile menu toggle
+        const mobileMenuButton = document.getElementById('mobile-menu-button');
+        const mobileMenu = document.getElementById('mobile-menu');
+
+        if (mobileMenuButton && mobileMenu) {
+            mobileMenuButton.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        // Cart functionality
+        const cartButton = document.getElementById('cart-button');
+        const cartSidebar = document.getElementById('cart-sidebar');
+        const closeCart = document.getElementById('close-cart');
+        const cartOverlay = document.getElementById('cart-overlay');
+        const cartItemsContainer = document.getElementById('cart-items');
+        const cartSubtotal = document.getElementById('cart-subtotal');
+        const cartCount = document.getElementById('cart-count');
+        const checkoutButton = document.getElementById('checkout-button');
+        const emptyCartMessage = document.getElementById('empty-cart-message');
+
+        let cart = [];
+
+        // Open/close cart
+        cartButton.addEventListener('click', () => {
+            cartSidebar.classList.remove('translate-x-full');
+            cartOverlay.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+        });
+
+        closeCart.addEventListener('click', () => {
+            cartSidebar.classList.add('translate-x-full');
+            cartOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+
+        cartOverlay.addEventListener('click', () => {
+            cartSidebar.classList.add('translate-x-full');
+            cartOverlay.classList.add('hidden');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Add to cart functionality
+        document.querySelectorAll('.add-to-cart').forEach(button => {
+            button.addEventListener('click', () => {
+                const id = button.getAttribute('data-id');
+                const name = button.getAttribute('data-name');
+                const price = parseFloat(button.getAttribute('data-price'));
+                const color = button.closest('.product-card').querySelector('.color-option.selected').getAttribute('data-color');
+
+                // Check if item already exists in cart
+                const existingItem = cart.find(item => item.id === id && item.color === color);
+
+                if (existingItem) {
+                    existingItem.quantity += 1;
+                } else {
+                    cart.push({
+                        id,
+                        name: `${name} (${color === 'black' ? 'Preta' : 'Branca'})`,
+                        price,
+                        color,
+                        quantity: 1
+                    });
+                }
+
+                updateCart();
+
+                // Show cart sidebar
+                cartSidebar.classList.remove('translate-x-full');
+                cartOverlay.classList.remove('hidden');
+                document.body.style.overflow = 'hidden';
+
+                // Animation feedback
+                button.textContent = 'Adicionado!';
+                button.classList.remove('bg-red-600', 'hover:bg-red-700');
+                button.classList.add('bg-green-600', 'hover:bg-green-700');
+
+                setTimeout(() => {
+                    button.textContent = 'Adicionar';
+                    button.classList.remove('bg-green-600', 'hover:bg-green-700');
+                    button.classList.add('bg-red-600', 'hover:bg-red-700');
+                }, 1000);
+            });
+        });
+
+        // Color selection
+        document.querySelectorAll('.color-option').forEach(option => {
+            option.addEventListener('click', function() {
+                const card = this.closest('.product-card');
+                card.querySelectorAll('.color-option').forEach(opt => {
+                    opt.classList.remove('selected');
+                });
+                this.classList.add('selected');
+            });
+        });
+
+        // Update cart UI
+        function updateCart() {
+            // Update cart count
+            const totalItems = cart.reduce((total, item) => total + item.quantity, 0);
+            cartCount.textContent = totalItems;
+
+            // Update cart items
+            cartItemsContainer.innerHTML = '';
+
+            if (cart.length === 0) {
+                emptyCartMessage.classList.remove('hidden');
+                checkoutButton.disabled = true;
+            } else {
+                emptyCartMessage.classList.add('hidden');
+                checkoutButton.disabled = false;
+
+                let subtotal = 0;
+
+                cart.forEach(item => {
+                    subtotal += item.price * item.quantity;
+
+                    const cartItem = document.createElement('div');
+                    cartItem.className = 'flex items-center py-4 border-b border-gray-100 fade-in';
+                    cartItem.innerHTML = `
+                        <div class="flex-shrink-0 h-16 w-16 overflow-hidden rounded-md bg-gray-100">
+                            <div class="h-full w-full flex items-center justify-center text-gray-400">
+                                <i class="fas fa-tshirt text-2xl ${item.color === 'black' ? 'text-gray-900' : 'text-gray-200'}"></i>
+                            </div>
+                        </div>
+                        <div class="ml-4 flex-1">
+                            <div class="flex justify-between text-base font-medium text-gray-900">
+                                <h3>${item.name}</h3>
+                                <p class="ml-4">R$${(item.price * item.quantity).toFixed(2)}</p>
+                            </div>
+                            <div class="flex items-center mt-2">
+                                <button class="decrease-quantity text-gray-500 hover:text-gray-700" data-id="${item.id}" data-color="${item.color}">
+                                    <i class="fas fa-minus text-xs"></i>
+                                </button>
+                                <span class="mx-2 text-gray-700">${item.quantity}</span>
+                                <button class="increase-quantity text-gray-500 hover:text-gray-700" data-id="${item.id}" data-color="${item.color}">
+                                    <i class="fas fa-plus text-xs"></i>
+                                </button>
+                                <button class="remove-item ml-4 text-red-500 hover:text-red-700 text-sm" data-id="${item.id}" data-color="${item.color}">
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `;
+
+                    cartItemsContainer.appendChild(cartItem);
+                });
+
+                // Update subtotal
+                cartSubtotal.textContent = `R$${subtotal.toFixed(2)}`;
+            }
+
+            // Add event listeners to quantity buttons
+            document.querySelectorAll('.increase-quantity').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-id');
+                    const color = button.getAttribute('data-color');
+                    const item = cart.find(item => item.id === id && item.color === color);
+                    if (item) {
+                        item.quantity += 1;
+                        updateCart();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.decrease-quantity').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-id');
+                    const color = button.getAttribute('data-color');
+                    const item = cart.find(item => item.id === id && item.color === color);
+                    if (item && item.quantity > 1) {
+                        item.quantity -= 1;
+                        updateCart();
+                    }
+                });
+            });
+
+            document.querySelectorAll('.remove-item').forEach(button => {
+                button.addEventListener('click', () => {
+                    const id = button.getAttribute('data-id');
+                    const color = button.getAttribute('data-color');
+                    cart = cart.filter(item => !(item.id === id && item.color === color));
+                    updateCart();
+                });
+            });
+        }
+
+        // Checkout button
+        checkoutButton.addEventListener('click', () => {
+            alert('Redirecionando para o checkout! Em um sistema real, isso levaria à página de pagamento.');
+        });
+
+        // Dynamic product loading (simulated)
+        document.addEventListener('DOMContentLoaded', function() {
+            // In a real application, you would fetch products from your backend here
+            console.log('Página carregada - produtos serão carregados do banco de dados');
+        });
+    </script>
+</body>
+
+</html>

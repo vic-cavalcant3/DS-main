@@ -1,5 +1,11 @@
 <?php
-require 'conexao.php';
+require '../conexao.php';
+
+session_start();
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: ../pages/login.php");
+    exit;
+}
 
 // Configurações de upload
 $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/admin/src/uploads/';
@@ -176,7 +182,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </li>
 
                                     <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-                    <a href="#" class="flex items-center text-red-400 p-2 rounded hover:bg-gray-800">
+                    <a href="../utils/logout.php" class="flex items-center text-red-400 p-2 rounded hover:bg-gray-800">
                         <i class="fas fa-sign-out-alt mr-2"></i>
                         Sair
                     </a>

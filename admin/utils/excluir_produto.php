@@ -1,5 +1,5 @@
 <?php
-require 'conexao.php';
+require '../conexao.php';
 
 if (!isset($_GET['id'])) {
     header('Location: listar_produtos.php');
@@ -58,7 +58,7 @@ try {
     $pdo->commit();
 
     // Redirecionamento com mensagem de sucesso
-    header("Location: listar_produtos.php?success=" . urlencode("Produto excluído com sucesso"));
+    header("Location: ../pages/listar_produtos.php?success=" . urlencode("Produto excluído com sucesso"));
     exit;
 
 } catch (PDOException $e) {
@@ -66,13 +66,13 @@ try {
     $pdo->rollBack();
     
     // Redirecionamento com mensagem de erro
-    header("Location: listar_produtos.php?error=" . urlencode("Erro ao excluir produto: " . $e->getMessage()));
+    header("Location: ../pages/listar_produtos.php?error=" . urlencode("Erro ao excluir produto: " . $e->getMessage()));
     exit;
 } catch (Exception $e) {
     // Rollback para outros tipos de erro
     $pdo->rollBack();
     
-    header("Location: listar_produtos.php?error=" . urlencode("Erro inesperado: " . $e->getMessage()));
+    header("Location: ../pages/listar_produtos.php?error=" . urlencode("Erro inesperado: " . $e->getMessage()));
     exit;
 }
 ?>

@@ -1,5 +1,11 @@
 <?php
-require 'conexao.php';
+require '../conexao.php';
+
+session_start();
+if (!isset($_SESSION['admin_id'])) {
+    header("Location: login.php");
+    exit;
+}
 
 try {
     $sql = "SELECT produtos.*, 
@@ -73,7 +79,7 @@ try {
                     </li>
 
                 <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-                    <a href="#" class="flex items-center text-red-400 p-2 rounded hover:bg-gray-800">
+                    <a href="../utils/logout.php" class="flex items-center text-red-400 p-2 rounded hover:bg-gray-800">
                         <i class="fas fa-sign-out-alt mr-2"></i>
                         Sair
                     </a>
@@ -146,11 +152,13 @@ try {
                         </div>
                         
                         <div class="mt-4 flex justify-end space-x-2">
-                            <a href="editar_produto.php?id=<?= $produto['id'] ?>" 
-                               class="text-blue-600 hover:text-blue-800 px-3 py-1 border border-blue-300 rounded">
-                                <i class="fas fa-edit"></i> Editar
-                            </a>
-                            <a href="excluir_produto.php?id=<?= $produto['id'] ?>" 
+                           <button 
+   class="abrir-modal-editar text-blue-600 hover:text-blue-800 px-3 py-1 border border-blue-300 rounded"
+   data-id="<?= $produto['id'] ?>">
+   <i class="fas fa-edit"></i> Editar
+</button>
+
+                            <a href="../utils/excluir_produto.php?id=<?= $produto['id'] ?>" 
                                class="text-red-600 hover:text-red-800 px-3 py-1 border border-red-300 rounded"
                                onclick="return confirm('Tem certeza que deseja excluir este produto?')">
                                 <i class="fas fa-trash"></i> Excluir
@@ -163,7 +171,65 @@ try {
         </div>
     </div>
 
+    <!-- Modal Editar Produto -->
+<div id="modal-editar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+  <div class="bg-white rounded-xl shadow-lg w-3/4 max-w-2xl p-6 relative">
+    
+    <!-- Fechar -->
+    <button onclick="document.getElementById('modal-editar').classList.add('hidden')" 
+      class="absolute top-4 right-4 text-gray-600 hover:text-black text-xl font-bold">&times;</button>
+
+    <h2 class="text-2xl font-bold text-gray-800 mb-6">Editar Produto</h2>
+
+    <form id="form-editar" action="../utils/salvar_edicao.php" method="POST" class="space-y-4">
+      <input type="hidden" name="id" id="editar-id">
+
+      <div>
+        <label class="block text-gray-700 font-semibold">Nome</label>
+        <input type="text" name="nome" id="editar-nome" class="w-full p-3 border rounded-lg">
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold">Descrição</label>
+        <textarea name="descricao" id="editar-descricao" class="w-full p-3 border rounded-lg"></textarea>
+      </div>
+
+      <div>
+        <label class="block text-gray-700 font-semibold">Preço</label>
+        <input type="number" step="0.01" name="preco" id="editar-preco" class="w-full p-3 border rounded-lg">
+      </div>
+
+      <div class="text-right">
+        <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg shadow hover:bg-green-700">
+          Salvar Alterações
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
     <script>
+        document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
+    btn.addEventListener('click', async () => {
+        const id = btn.dataset.id;
+        
+        // busca produto via AJAX
+        const response = await fetch(`../utils/editar_produto.php?id=${id}&json=1`);
+        const data = await response.json();
+
+        // preenche o modal
+        document.getElementById('editar-id').value = data.id;
+        document.getElementById('editar-nome').value = data.nome;
+        document.getElementById('editar-descricao').value = data.descricao;
+        document.getElementById('editar-preco').value = data.preco;
+
+        // mostra modal
+        document.getElementById('modal-editar').classList.remove('hidden');
+    });
+});
+
+
         // Ativar menu responsivo
         document.querySelectorAll('.sidebar-link').forEach(link => {
             if (link.href === window.location.href) {
