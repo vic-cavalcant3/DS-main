@@ -7,6 +7,20 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
+// Buscar categorias e animes para os selects
+$categorias = [];
+$animes = [];
+
+try {
+    $stmt = $pdo->query("SELECT * FROM categorias WHERE ativo = 1 ORDER BY nome");
+    $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $stmt = $pdo->query("SELECT * FROM animes WHERE ativo = 1 ORDER BY nome");
+    $animes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // Se as tabelas não existirem, continua sem erro
+}
+
 // Configurações de upload
 $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/admin/src/uploads/';
 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
@@ -17,6 +31,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $nome = $_POST['nome'];
     $descricao = $_POST['descricao'];
     $preco = $_POST['preco'];
+    $preco_original = !empty($_POST['preco_original']) ? $_POST['preco_original'] : null;
+    $desconto = !empty($_POST['desconto']) ? $_POST['desconto'] : 0;
+    $categoria_id = !empty($_POST['categoria_id']) ? $_POST['categoria_id'] : null;
+    $anime_id = !empty($_POST['anime_id']) ? $_POST['anime_id'] : null;
+    $cores = !empty($_POST['cores']) ? implode(',', $_POST['cores']) : null;
     $tags = $_POST['tags'];
     $imagens = [];
 
@@ -64,10 +83,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Inicia transação
         $pdo->beginTransaction();
         
-        // Cadastra o produto
-        $sql = "INSERT INTO produtos (nome, descricao, preco, tags) VALUES (?, ?, ?, ?)";
+        // Cadastra o produto com todas as colunas
+        $sql = "INSERT INTO produtos (nome, descricao, preco, preco_original, desconto, categoria_id, anime_id, cores, tags, status, ativo, imagem_principal) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ativo', 1, ?)";
+        
+        // Define imagem principal (primeira imagem ou null)
+        $imagem_principal = !empty($imagens) ? $imagens[0] : null;
+        
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([$nome, $descricao, $preco, $tags]);
+        $stmt->execute([
+            $nome, 
+            $descricao, 
+            $preco, 
+            $preco_original, 
+            $desconto, 
+            $categoria_id, 
+            $anime_id, 
+            $cores, 
+            $tags, 
+            $imagem_principal
+        ]);
+        
         $produto_id = $pdo->lastInsertId();
         
         // Debug: verifica se o produto foi inserido
@@ -181,12 +217,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                         </a>
                     </li>
 
-                                    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
-                    <a href="../utils/logout.php" class="flex items-center text-red-400 p-2 rounded hover:bg-gray-800">
-                        <i class="fas fa-sign-out-alt mr-2"></i>
-                        Sair
-                    </a>
-                </div>
+                    <div class="absolute bottom-0 left-0 right-0 p-4 border-t border-gray-700">
+                        <a href="../utils/logout.php" class="flex items-center text-red-400 p-2 rounded hover:bg-gray-800">
+                            <i class="fas fa-sign-out-alt mr-2"></i>
+                            Sair
+                        </a>
+                    </div>
 
                 </ul>
             </nav>
@@ -223,9 +259,61 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label class="block text-gray-700 mb-2">Preço (R$)*</label>
                             <input type="number" step="0.01" name="preco" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" required>
                         </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Preço Original (R$)</label>
+                            <input type="number" step="0.01" name="preco_original" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                            <p class="text-sm text-gray-500 mt-1">Para produtos em promoção</p>
+                        </div>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Desconto (%)</label>
+                            <input type="number" name="desconto" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" min="0" max="100" value="0">
+                        </div>
+                        <?php if (!empty($categorias)): ?>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Categoria</label>
+                            <select name="categoria_id" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <option value="">Selecione uma categoria</option>
+                                <?php foreach ($categorias as $categoria): ?>
+                                <option value="<?= $categoria['id'] ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+                        <?php if (!empty($animes)): ?>
+                        <div>
+                            <label class="block text-gray-700 mb-2">Anime</label>
+                            <select name="anime_id" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                                <option value="">Selecione um anime</option>
+                                <?php foreach ($animes as $anime): ?>
+                                <option value="<?= $anime['id'] ?>"><?= htmlspecialchars($anime['nome']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
                         <div class="md:col-span-2">
                             <label class="block text-gray-700 mb-2">Descrição</label>
                             <textarea name="descricao" rows="3" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
+                        </div>
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 mb-2">Cores Disponíveis</label>
+                            <div class="flex flex-wrap gap-4">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="preto" class="mr-2">
+                                    <span class="w-6 h-6 bg-black rounded-full mr-2"></span> Preto
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="branco" class="mr-2">
+                                    <span class="w-6 h-6 bg-white border rounded-full mr-2"></span> Branco
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="cinza" class="mr-2">
+                                    <span class="w-6 h-6 bg-gray-500 rounded-full mr-2"></span> Cinza
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="vermelho" class="mr-2">
+                                    <span class="w-6 h-6 bg-red-500 rounded-full mr-2"></span> Vermelho
+                                </label>
+                            </div>
                         </div>
                         <div class="md:col-span-2">
                             <label class="block text-gray-700 mb-2">Tags</label>

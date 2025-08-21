@@ -110,7 +110,6 @@ $categorias = $categorias_stmt->fetchAll(PDO::FETCH_ASSOC);
 $animes_stmt = $pdo->query("SELECT * FROM animes WHERE ativo = 1 ORDER BY nome");
 $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
-]
 
 <!DOCTYPE html>
 <html lang="pt-BR">
@@ -197,32 +196,40 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center justify-center">
-                    <a href="index.php" class="text-2xl font-bold text-gray-900 hover:opacity-90 transition-opacity">
-                        <img src="./client/src/Flamma-logo.png" alt="Flamma" class="h-10 md:h-12 w-auto">
+                    <a href="../../index.html" class="text-2xl font-bold text-gray-900 hover:opacity-90 transition-opacity">
+                        <img src="../../client/src/Flamma-logo.png" alt="Flamma Index" class="h-10 md:h-12 w-auto">
                     </a>
                 </div>
 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-6">
-                    <a href="produtos.php" class="text-red-500 px-3 py-3 text-sm font-semibold border-b-2 border-red-500">Produtos</a>
-                    <a href="produtos.php?categoria=masculino" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Masculino</a>
-                    <a href="produtos.php?categoria=feminino" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminino</a>
-                    <a href="produtos.php?categoria=infantil" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Infantil</a>
-                    <a href="sobre.php" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Sobre</a>
-                    <a href="contato.php" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Contato</a>
+                    <a href="produtos.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Produtos</a>
+                    <a href="#"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Masculino</a>
+                    <a href="#"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminino</a>
+                    <a href="#"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Infantil</a>
+                    <a href="#"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Sobre</a>
+                    <a href="#"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Contato</a>
                 </div>
 
                 <!-- Right Icons -->
                 <div class="flex items-center space-x-6">
-                    <button id="search-button" class="text-white hover:text-red-500 transition-colors duration-200">
+                    <button class="text-white hover:text-red-500 transition-colors duration-200">
                         <i class="fas fa-search text-xl"></i>
                     </button>
                     <button class="text-white hover:text-red-500 transition-colors duration-200">
                         <i class="far fa-user text-xl"></i>
                     </button>
-                    <button id="cart-button" class="text-white hover:text-red-500 transition-colors duration-200 relative">
+                    <button id="cart-button"
+                        class="text-white hover:text-red-500 transition-colors duration-200 relative">
                         <i class="fas fa-shopping-bag text-xl"></i>
-                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                        <span id="cart-count"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
                     </button>
                 </div>
             </div>
@@ -231,12 +238,12 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
         <!-- Mobile Menu -->
         <div id="mobile-menu" class="hidden md:hidden bg-black border-t border-gray-800">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="produtos.php" class="block px-3 py-3 text-base font-medium text-red-500 border-l-4 border-red-500 bg-gray-900">Produtos</a>
-                <a href="produtos.php?categoria=masculino" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
-                <a href="produtos.php?categoria=feminino" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
-                <a href="produtos.php?categoria=infantil" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
-                <a href="sobre.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Sobre</a>
-                <a href="contato.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Contato</a>
+                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">New Releases</a>
+                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Men</a>
+                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Women</a>
+                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Kids</a>
+                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Accessories</a>
+                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Sale</a>
             </div>
         </div>
     </nav>
@@ -399,9 +406,6 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <i class="fas fa-search text-4xl text-gray-300 mb-4"></i>
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum produto encontrado</h3>
                     <p class="text-gray-600">Tente ajustar os filtros para encontrar o que procura.</p>
-                    <a href="produtos.php" class="inline-block mt-4 px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700">
-                        Ver todos os produtos
-                    </a>
                 </div>
                 <?php else: ?>
                 <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
