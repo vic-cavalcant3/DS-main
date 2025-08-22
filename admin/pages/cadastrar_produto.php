@@ -161,6 +161,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -315,11 +316,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </label>
                             </div>
                         </div>
-                        <div class="md:col-span-2">
-                            <label class="block text-gray-700 mb-2">Tags</label>
-                            <input type="text" name="tags" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Anime, Naruto, Dragon Ball">
-                            <p class="text-sm text-gray-500 mt-1">Separe as tags por vírgula</p>
-                        </div>
+                        
                     </div>
                 </div>
                 

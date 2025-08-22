@@ -23,8 +23,21 @@ try {
 } catch (PDOException $e) {
     die("Erro ao listar produtos: " . $e->getMessage());
 }
-?>
 
+// Buscar categorias e animes para os selects do modal
+$categorias = [];
+$animes = [];
+
+try {
+    $stmt = $pdo->query("SELECT * FROM categorias WHERE ativo = 1 ORDER BY nome");
+    $categorias = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    $stmt = $pdo->query("SELECT * FROM animes WHERE ativo = 1 ORDER BY nome");
+    $animes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+} catch (Exception $e) {
+    // Se as tabelas não existirem, continua sem erro
+}
+?>
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -51,14 +64,27 @@ try {
             transform: translateY(-5px);
             box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
         }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+        .tab-button {
+            transition: all 0.3s;
+        }
+        .tab-button.active {
+            background-color: #f3f4f6;
+            border-color: #ef4444;
+            color: #ef4444;
+        }
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
     <div class="flex h-screen">
         <!-- Menu Lateral -->
-                <div class="sidebar w-64 fixed h-full text-white">
+        <div class="sidebar w-64 fixed h-full text-white">
             <div class="p-4 border-b border-gray-700 flex items-center">
-                <!-- <img src="/ds-main/client/src/Flamma-logo.png" alt="Logo" class="h-10 mr-3"> -->
                 <h1 class="text-xl font-bold">Flamma Admin</h1>
             </div>
             
@@ -88,10 +114,6 @@ try {
                 </ul>
             </nav>
         </div>
-
-
-         
-        
 
         <!-- Conteúdo Principal -->
         <div class="ml-64 flex-1 p-8 overflow-auto">
@@ -152,11 +174,11 @@ try {
                         </div>
                         
                         <div class="mt-4 flex justify-end space-x-2">
-                           <button 
-   class="abrir-modal-editar text-blue-600 hover:text-blue-800 px-3 py-1 border border-blue-300 rounded"
-   data-id="<?= $produto['id'] ?>">
-   <i class="fas fa-edit"></i> Editar
-</button>
+                            <button 
+                                class="abrir-modal-editar text-blue-600 hover:text-blue-800 px-3 py-1 border border-blue-300 rounded"
+                                data-id="<?= $produto['id'] ?>">
+                                <i class="fas fa-edit"></i> Editar
+                            </button>
 
                             <a href="../utils/excluir_produto.php?id=<?= $produto['id'] ?>" 
                                class="text-red-600 hover:text-red-800 px-3 py-1 border border-red-300 rounded"
@@ -172,63 +194,318 @@ try {
     </div>
 
     <!-- Modal Editar Produto -->
-<div id="modal-editar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-  <div class="bg-white rounded-xl shadow-lg w-3/4 max-w-2xl p-6 relative">
-    
-    <!-- Fechar -->
-    <button onclick="document.getElementById('modal-editar').classList.add('hidden')" 
-      class="absolute top-4 right-4 text-gray-600 hover:text-black text-xl font-bold">&times;</button>
+    <div id="modal-editar" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+        <div class="bg-white rounded-xl shadow-lg w-full max-w-4xl max-h-[90vh] overflow-y-auto p-6 relative">
+            
+            <!-- Fechar -->
+            <button onclick="document.getElementById('modal-editar').classList.add('hidden')" 
+                class="absolute top-4 right-4 text-gray-600 hover:text-black text-xl font-bold">&times;</button>
 
-    <h2 class="text-2xl font-bold text-gray-800 mb-6">Editar Produto</h2>
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Editar Produto</h2>
 
-    <form id="form-editar" action="../utils/salvar_edicao.php" method="POST" class="space-y-4">
-      <input type="hidden" name="id" id="editar-id">
+            <!-- Abas de navegação -->
+            <div class="flex border-b mb-6">
+                <button class="tab-button py-2 px-4 border-b-2 border-transparent active" data-tab="info-basicas">Informações Básicas</button>
+                <button class="tab-button py-2 px-4 border-b-2 border-transparent" data-tab="estoque">Estoque</button>
+                <button class="tab-button py-2 px-4 border-b-2 border-transparent" data-tab="imagens">Imagens</button>
+            </div>
 
-      <div>
-        <label class="block text-gray-700 font-semibold">Nome</label>
-        <input type="text" name="nome" id="editar-nome" class="w-full p-3 border rounded-lg">
-      </div>
+           <form id="form-editar" action="../utils/editar_produto.php" method="POST" class="space-y-6" enctype="multipart/form-data">   
+                <input type="hidden" name="id" id="editar-id">
 
-      <div>
-        <label class="block text-gray-700 font-semibold">Descrição</label>
-        <textarea name="descricao" id="editar-descricao" class="w-full p-3 border rounded-lg"></textarea>
-      </div>
+                <!-- Aba Informações Básicas -->
+                <div id="tab-info-basicas" class="tab-content active">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Nome</label>
+                            <input type="text" name="nome" id="editar-nome" class="w-full p-3 border rounded-lg" required>
+                        </div>
 
-      <div>
-        <label class="block text-gray-700 font-semibold">Preço</label>
-        <input type="number" step="0.01" name="preco" id="editar-preco" class="w-full p-3 border rounded-lg">
-      </div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Preço (R$)</label>
+                            <input type="number" step="0.01" name="preco" id="editar-preco" class="w-full p-3 border rounded-lg" required>
+                        </div>
 
-      <div class="text-right">
-        <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg shadow hover:bg-green-700">
-          Salvar Alterações
-        </button>
-      </div>
-    </form>
-  </div>
-</div>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Preço Original (R$)</label>
+                            <input type="number" step="0.01" name="preco_original" id="editar-preco_original" class="w-full p-3 border rounded-lg">
+                        </div>
 
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Desconto (%)</label>
+                            <input type="number" name="desconto" id="editar-desconto" class="w-full p-3 border rounded-lg" min="0" max="100">
+                        </div>
+
+                        <?php if (!empty($categorias)): ?>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Categoria</label>
+                            <select name="categoria_id" id="editar-categoria_id" class="w-full p-3 border rounded-lg">
+                                <option value="">Selecione uma categoria</option>
+                                <?php foreach ($categorias as $categoria): ?>
+                                <option value="<?= $categoria['id'] ?>"><?= htmlspecialchars($categoria['nome']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+
+                        <?php if (!empty($animes)): ?>
+                        <div>
+                            <label class="block text-gray-700 font-semibold mb-2">Anime</label>
+                            <select name="anime_id" id="editar-anime_id" class="w-full p-3 border rounded-lg">
+                                <option value="">Selecione um anime</option>
+                                <?php foreach ($animes as $anime): ?>
+                                <option value="<?= $anime['id'] ?>"><?= htmlspecialchars($anime['nome']) ?></option>
+                                <?php endforeach; ?>
+                            </select>
+                        </div>
+                        <?php endif; ?>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">Descrição</label>
+                            <textarea name="descricao" id="editar-descricao" rows="3" class="w-full p-3 border rounded-lg"></textarea>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">Cores Disponíveis</label>
+                            <div class="flex flex-wrap gap-4" id="editar-cores-container">
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="preto" class="mr-2 editar-cor">
+                                    <span class="w-6 h-6 bg-black rounded-full mr-2"></span> Preto
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="branco" class="mr-2 editar-cor">
+                                    <span class="w-6 h-6 bg-white border rounded-full mr-2"></span> Branco
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="cinza" class="mr-2 editar-cor">
+                                    <span class="w-6 h-6 bg-gray-500 rounded-full mr-2"></span> Cinza
+                                </label>
+                                <label class="flex items-center">
+                                    <input type="checkbox" name="cores[]" value="vermelho" class="mr-2 editar-cor">
+                                    <span class="w-6 h-6 bg-red-500 rounded-full mr-2"></span> Vermelho
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="md:col-span-2">
+                            <label class="block text-gray-700 font-semibold mb-2">Tags</label>
+                            <input type="text" name="tags" id="editar-tags" class="w-full p-3 border rounded-lg" placeholder="Ex: Anime, Naruto, Dragon Ball">
+                            <p class="text-sm text-gray-500 mt-1">Separe as tags por vírgula</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Aba Estoque -->
+                <div id="tab-estoque" class="tab-content">
+                    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                        <?php
+                        $tamanhos = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
+                        foreach ($tamanhos as $tamanho): ?>
+                        <div>
+                            <label class="block text-gray-700 mb-1">Tamanho <?= $tamanho ?></label>
+                            <input type="number" name="estoque_<?= $tamanho ?>" id="editar-estoque_<?= $tamanho ?>" class="w-full p-3 border rounded-lg" value="0" min="0">
+                        </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Aba Imagens -->
+                <div id="tab-imagens" class="tab-content">
+                    <div class="mb-4">
+                        <label class="block text-gray-700 font-semibold mb-2">Adicionar Novas Imagens</label>
+                        <div class="file-upload mb-4 rounded-lg p-6 text-center border-2 border-dashed border-gray-300">
+                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
+                            <p class="text-gray-600 mb-2">Arraste e solte imagens aqui ou clique para selecionar</p>
+                            <input type="file" name="novas_imagens[]" accept="image/jpeg, image/png, image/webp" class="hidden" id="editar-file-input" multiple>
+                            <button type="button" onclick="document.getElementById('editar-file-input').click()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg mt-2">
+                                Selecionar Arquivos
+                            </button>
+                            <p class="text-xs text-gray-500 mt-3">Formatos aceitos: JPEG, PNG, WebP | Máx. 2MB cada</p>
+                        </div>
+                        <div id="editar-preview-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4"></div>
+                    </div>
+
+                    <div>
+                        <label class="block text-gray-700 font-semibold mb-2">Imagens Atuais</label>
+                        <div id="imagens-atuais-container" class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                            <!-- As imagens atuais serão carregadas aqui via JavaScript -->
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex justify-end pt-4 border-t">
+                    <button type="submit" class="px-6 py-3 bg-red-600 text-white rounded-lg shadow hover:bg-red-700">
+                        Salvar Alterações
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <script>
-        document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
+        // Sistema de abas
+        document.querySelectorAll('.tab-button').forEach(button => {
+            button.addEventListener('click', () => {
+                // Remove a classe active de todos os botões e conteúdos
+                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+                
+                // Adiciona a classe active ao botão clicado
+                button.classList.add('active');
+                
+                // Mostra o conteúdo correspondente
+                const tabId = button.getAttribute('data-tab');
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+            });
+        });
+
+        // Preview de novas imagens no modal de edição
+        const editarFileInput = document.getElementById('editar-file-input');
+        const editarPreviewContainer = document.getElementById('editar-preview-container');
+        
+        editarFileInput.addEventListener('change', function() {
+            editarPreviewContainer.innerHTML = '';
+            
+            if (this.files) {
+                Array.from(this.files).forEach(file => {
+                    if (file.type.startsWith('image/') && file.size <= 2 * 1024 * 1024) {
+                        const reader = new FileReader();
+                        
+                        reader.onload = function(e) {
+                            const preview = document.createElement('div');
+                            preview.className = 'relative';
+                            preview.innerHTML = `
+                                <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                                <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            `;
+                            preview.querySelector('button').addEventListener('click', () => {
+                                preview.remove();
+                            });
+                            editarPreviewContainer.appendChild(preview);
+                        }
+                        
+                        reader.readAsDataURL(file);
+                    }
+                });
+            }
+        });
+
+        // Drag and drop para o modal de edição
+        const editarUploadArea = document.querySelector('#tab-imagens .file-upload');
+        
+        editarUploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            editarUploadArea.classList.add('border-red-400', 'bg-red-50');
+        });
+        
+        editarUploadArea.addEventListener('dragleave', () => {
+            editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
+        });
+        
+        editarUploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
+            editarFileInput.files = e.dataTransfer.files;
+            const event = new Event('change');
+            editarFileInput.dispatchEvent(event);
+        });
+
+       // Abrir modal de edição - código atualizado para exibir imagens
+document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
     btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
         
-        // busca produto via AJAX
-        const response = await fetch(`../utils/editar_produto.php?id=${id}&json=1`);
-        const data = await response.json();
+        try {
+            // Busca produto via AJAX
+            const response = await fetch(`../utils/editar_produto.php?id=${id}&json=1`);
+            
+            // Verifica se a resposta é JSON válido
+            const contentType = response.headers.get('content-type');
+            if (!contentType || !contentType.includes('application/json')) {
+                const text = await response.text();
+                throw new Error(`Resposta não é JSON: ${text.substring(0, 100)}...`);
+            }
+            
+            const data = await response.json();
 
-        // preenche o modal
-        document.getElementById('editar-id').value = data.id;
-        document.getElementById('editar-nome').value = data.nome;
-        document.getElementById('editar-descricao').value = data.descricao;
-        document.getElementById('editar-preco').value = data.preco;
+            if (data.error) {
+                alert('Erro: ' + data.error);
+                return;
+            }
 
-        // mostra modal
-        document.getElementById('modal-editar').classList.remove('hidden');
+            // ... (outros preenchimentos de campos) ...
+
+            // Exibe as imagens atuais
+            const imagensContainer = document.getElementById('imagens-atuais-container');
+            imagensContainer.innerHTML = '';
+            
+            if (data.imagens && data.imagens.length > 0) {
+                data.imagens.forEach(imagem => {
+                    // Obtém o nome do arquivo e constrói o caminho completo
+                    const nomeImagem = imagem.caminho ? basename(imagem.caminho) : 
+                                      imagem.url_imagem ? basename(imagem.url_imagem) : '';
+                    
+                    const imagePath = '/ds-main/admin/src/uploads/' + nomeImagem;
+                    
+                    const imgDiv = document.createElement('div');
+                    imgDiv.className = 'relative';
+                    imgDiv.innerHTML = `
+                        <div class="bg-white rounded-lg shadow-md overflow-hidden">
+                            <img src="${imagePath}" 
+                                 alt="Imagem do produto" 
+                                 class="w-full h-32 object-cover"
+                                 onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200?text=Imagem+Não+Encontrada'">
+                            <div class="absolute bottom-2 right-2 flex space-x-1">
+                                <button type="button" class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center excluir-imagem" data-imagem-id="${imagem.id}">
+                                    <i class="fas fa-times text-xs"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <input type="hidden" name="imagens_atuais[]" value="${imagem.id}">
+                    `;
+                    imagensContainer.appendChild(imgDiv);
+                });
+                
+                // Adiciona event listeners para os botões de excluir imagens
+                document.querySelectorAll('.excluir-imagem').forEach(button => {
+                    button.addEventListener('click', function() {
+                        const imagemId = this.getAttribute('data-imagem-id');
+                        // Adiciona um campo hidden para marcar a imagem para exclusão
+                        const input = document.createElement('input');
+                        input.type = 'hidden';
+                        input.name = 'excluir_imagens[]';
+                        input.value = imagemId;
+                        document.getElementById('form-editar').appendChild(input);
+                        
+                        // Remove a imagem da visualização
+                        this.closest('.relative').remove();
+                    });
+                });
+            } else {
+                imagensContainer.innerHTML = `
+                    <div class="col-span-full bg-gray-200 rounded-lg flex items-center justify-center h-32">
+                        <i class="fas fa-tshirt text-4xl text-gray-400"></i>
+                    </div>
+                    <p class="col-span-full text-gray-500 text-center">Nenhuma imagem encontrada para este produto.</p>
+                `;
+            }
+            
+            // Mostra modal
+            document.getElementById('modal-editar').classList.remove('hidden');
+            
+        } catch (error) {
+            console.error('Erro ao carregar dados do produto:', error);
+            alert('Erro ao carregar dados do produto: ' + error.message);
+        }
     });
 });
 
+// Função auxiliar para extrair o nome do arquivo do caminho
+function basename(path) {
+    return path.split('/').pop().split('\\').pop();
+}
 
         // Ativar menu responsivo
         document.querySelectorAll('.sidebar-link').forEach(link => {
@@ -236,6 +513,9 @@ try {
                 link.classList.add('active');
             }
         });
+
+
+
     </script>
 </body>
 </html>

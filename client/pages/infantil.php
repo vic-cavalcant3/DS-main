@@ -11,7 +11,7 @@ $pagina = $_GET['pagina'] ?? 1;
 $itens_por_pagina = 12;
 $offset = ($pagina - 1) * $itens_por_pagina;
 
-// Construir query SQL com filtros - CORREÇÃO: Aspas faltando
+// Construir query SQL com filtros para produtos masculinos
 $sql = "SELECT p.*, 
                c.nome as categoria_nome, 
                a.nome as anime_nome,
@@ -23,7 +23,7 @@ $sql = "SELECT p.*,
         FROM produtos p 
         LEFT JOIN categorias c ON p.categoria_id = c.id 
         LEFT JOIN animes a ON p.anime_id = a.id 
-        WHERE p.ativo = 1";
+        WHERE p.ativo = 1 AND c.slug = 'infantil'";
 
 $params = [];
 
@@ -65,12 +65,12 @@ switch ($ordenar) {
         $sql .= " ORDER BY p.nome ASC";
 }
 
-// Contar total de produtos para paginação - CORREÇÃO: Query de contagem mais segura
+// Contar total de produtos para paginação
 $count_sql = "SELECT COUNT(*) 
-             FROM produtos p 
-             LEFT JOIN categorias c ON p.categoria_id = c.id 
-             LEFT JOIN animes a ON p.anime_id = a.id 
-             WHERE p.ativo = 1";
+              FROM produtos p 
+              LEFT JOIN categorias c ON p.categoria_id = c.id 
+              LEFT JOIN animes a ON p.anime_id = a.id 
+              WHERE p.ativo = 1 AND c.slug = 'infantil'";
 
 // Adicionar filtros à query de contagem
 if ($categoria) {
@@ -118,13 +118,14 @@ $animes_stmt = $pdo->query("SELECT * FROM animes WHERE ativo = 1 ORDER BY nome")
 $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
 ?>
 
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Produtos | Flamma - Camisetas de Anime</title>
+    <title>Moda Infantil | Flamma - Camisetas de Anime</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
@@ -186,6 +187,12 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
+        
+        .hero-banner {
+            background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('https://images.unsplash.com/photo-1617137968429-3a798f838c82?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1770&q=80');
+            background-size: cover;
+            background-position: center;
+        }
     </style>
 </head>
 
@@ -211,13 +218,13 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-6">
                     <a href="produtos.php"
-                        class="text-red-500 hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Produtos</a>
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Produtos</a>
                     <a href="masculino.php"
                         class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Masculino</a>
                     <a href="feminino.php"
-                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminina</a>
-                    <a href="#"
-                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Infantil</a>
+                        class=" text-white  hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminina</a>
+                    <a href="infantil.php"
+                        class="text-red-500 hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Infantil</a>
                     <a href="#"
                         class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Sobre</a>
                     <a href="#"
@@ -246,9 +253,9 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div id="mobile-menu" class="hidden md:hidden bg-black border-t border-gray-800">
             <div class="px-2 pt-2 pb-3 space-y-1">
                 <a href="produtos.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Produtos</a>
-                <a href="masculino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
-                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
-                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
+                <a href="masculino.php" class="block px-3 py-3 text-base font-medium text-white bg-gray-900">Masculino</a>
+                <a href="feminino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
+                <a href="infantil.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
                 <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Sobre</a>
                 <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Contato</a>
             </div>
@@ -256,16 +263,15 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
     </nav>
 
     <!-- Page Header -->
-    <div class="bg-black text-white py-12">
+    <div class="bg-black hero-banner text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center">
-                <h1 class="text-3xl md:text-4xl font-bold mb-4">
-                    <span class="text-white">NOSSOS</span> 
-                    <span class="text-red-500">PRODUTOS</span>
+                <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                    <span class="text-white">MODA</span> 
+                    <span class="text-red-500">INFANTIL</span>
                 </h1>
                 <p class="text-gray-300 text-lg max-w-2xl mx-auto">
-                    Descubra nossa coleção completa de camisetas de anime com designs únicos e qualidade premium
-                </p>
+                   Estilo, conforto e diversão para os pequenos!
             </div>
         </div>
     </div>
@@ -276,10 +282,10 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- Sidebar Filters -->
             <aside class="lg:w-1/4">
                 <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
-                    <form method="GET" action="produtos.php" id="filter-form">
+                    <form method="GET" action="masculino.php" id="filter-form">
                         <div class="flex items-center justify-between mb-6">
                             <h2 class="text-lg font-semibold text-gray-900">Filtros</h2>
-                            <a href="produtos.php" class="text-red-500 text-sm hover:text-red-600">
+                            <a href="masculino.php" class="text-red-500 text-sm hover:text-red-600">
                                 Limpar Tudo
                             </a>
                         </div>
@@ -304,7 +310,7 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                         <?php endif; ?>
 
                         <!-- Category Filter -->
-                        <div class="mb-6 border-b border-gray-200 pb-4">
+                        <!-- <div class="mb-6 border-b border-gray-200 pb-4">
                             <button type="button" class="filter-toggle flex items-center justify-between w-full text-left font-medium text-gray-900 py-2" data-target="category-filter">
                                 <span>Categoria</span>
                                 <i class="fas fa-chevron-down transform transition-transform"></i>
@@ -320,7 +326,7 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                                 </label>
                                 <?php endforeach; ?>
                             </div>
-                        </div>
+                        </div> -->
 
                         <!-- Anime Filter -->
                         <div class="mb-6 border-b border-gray-200 pb-4">
@@ -401,9 +407,9 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                 <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6">
                     <div class="mb-4 sm:mb-0">
                         <h2 class="text-xl font-semibold text-gray-900">
-                            <?= $total_produtos ?> produto<?= $total_produtos !== 1 ? 's' : '' ?> encontrado<?= $total_produtos !== 1 ? 's' : '' ?>
+                            <?= $total_produtos ?> produto<?= $total_produtos !== 1 ? 's' : '' ?> Infanti<?= $total_produtos !== 1 ? 's' : '' ?> encontrado<?= $total_produtos !== 1 ? 's' : '' ?>
                         </h2>
-                        <p class="text-gray-600 text-sm">Camisetas de anime premium</p>
+                        <p class="text-gray-600 text-sm">Camisetas de anime para Crianças</p>
                     </div>
                 </div>
 
@@ -419,40 +425,40 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php foreach ($produtos as $produto): ?>
                     <div class="product-card bg-white rounded-lg overflow-hidden shadow-md fade-in">
                         <div class="relative group">
-    <?php 
-    // Construir caminho correto da imagem
-    $imagem_src = '';
-    if ($produto['imagem_principal']) {
-        // Se já contém o caminho completo admin/src/uploads/
-        if (strpos($produto['imagem_principal'], 'admin/src/uploads/') !== false) {
-            $imagem_src = '/ds-main/' . $produto['imagem_principal'];
-        } else {
-            // Se é apenas o nome do arquivo
-            $imagem_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_principal']);
-        }
-    } else {
-        $imagem_src = '/ds-main/client/src/no-image.png'; // imagem padrão
-    }
-    ?>
-    
-    <img src="<?= $imagem_src ?>" 
-         alt="<?= htmlspecialchars($produto['nome']) ?>" 
-         class="w-full h-80 object-cover"
-         onerror="this.src='/ds-main/client/src/no-image.png'">
-    
-    <?php if ($produto['imagem_hover']): ?>
-        <?php 
-        $imagem_hover_src = '';
-        if (strpos($produto['imagem_hover'], 'admin/src/uploads/') !== false) {
-            $imagem_hover_src = '/ds-main/' . $produto['imagem_hover'];
-        } else {
-            $imagem_hover_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_hover']);
-        }
-        ?>
-        <img src="<?= $imagem_hover_src ?>" 
-             alt="<?= htmlspecialchars($produto['nome']) ?> - Hover" 
-             class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-    <?php endif; ?>
+                            <?php 
+                            // Construir caminho correto da imagem
+                            $imagem_src = '';
+                            if ($produto['imagem_principal']) {
+                                // Se já contém o caminho completo admin/src/uploads/
+                                if (strpos($produto['imagem_principal'], 'admin/src/uploads/') !== false) {
+                                    $imagem_src = '/ds-main/' . $produto['imagem_principal'];
+                                } else {
+                                    // Se é apenas o nome do arquivo
+                                    $imagem_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_principal']);
+                                }
+                            } else {
+                                $imagem_src = '/ds-main/client/src/no-image.png'; // imagem padrão
+                            }
+                            ?>
+                            
+                            <img src="<?= $imagem_src ?>" 
+                                 alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                                 class="w-full h-80 object-cover"
+                                 onerror="this.src='/ds-main/client/src/no-image.png'">
+                            
+                            <?php if ($produto['imagem_hover']): ?>
+                                <?php 
+                                $imagem_hover_src = '';
+                                if (strpos($produto['imagem_hover'], 'admin/src/uploads/') !== false) {
+                                    $imagem_hover_src = '/ds-main/' . $produto['imagem_hover'];
+                                } else {
+                                    $imagem_hover_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_hover']);
+                                }
+                                ?>
+                                <img src="<?= $imagem_hover_src ?>" 
+                                     alt="<?= htmlspecialchars($produto['nome']) ?> - Hover" 
+                                     class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <?php endif; ?>
                         </div>
                         
                         <div class="p-4">
@@ -537,7 +543,7 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-   <!-- Shopping Cart Sidebar -->
+    <!-- Shopping Cart Sidebar -->
     <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 overflow-y-auto">
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
@@ -746,3 +752,4 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
     </script>
 </body>
 </html>
+
