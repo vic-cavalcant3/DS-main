@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Tempo de geração: 21/08/2025 às 21:02
+-- Tempo de geração: 25/08/2025 às 02:53
 -- Versão do servidor: 10.4.32-MariaDB
 -- Versão do PHP: 8.0.30
 
@@ -20,72 +20,6 @@ SET time_zone = "+00:00";
 --
 -- Banco de dados: `flammeindex`
 --
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `admins`
---
-
-CREATE TABLE `admins` (
-  `id` int(11) NOT NULL,
-  `usuario` varchar(50) NOT NULL,
-  `senha` varchar(255) NOT NULL,
-  `nome` varchar(100) NOT NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `admins`
---
-
-INSERT INTO `admins` (`id`, `usuario`, `senha`, `nome`) VALUES
-(1, 'admin', '$2y$10$Dua4QE6S8e/pUwR/E4S9XOFntg27v4ubvu3brE.hGuC9H87GlCXgi', 'Administrador');
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `animes`
---
-
-CREATE TABLE `animes` (
-  `id` int(11) NOT NULL,
-  `nome` varchar(100) NOT NULL,
-  `slug` varchar(100) NOT NULL,
-  `ativo` tinyint(1) DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `animes`
---
-
-INSERT INTO `animes` (`id`, `nome`, `slug`, `ativo`, `created_at`) VALUES
-(0, 'Naruto', 'naruto', 1, '2025-08-21 15:02:23'),
-(0, 'One Piece', 'one-piece', 1, '2025-08-21 15:02:23'),
-(0, 'Dragon Ball', 'dragon-ball', 1, '2025-08-21 15:02:23');
-
--- --------------------------------------------------------
-
---
--- Estrutura para tabela `categorias`
---
-
-CREATE TABLE `categorias` (
-  `id` int(11) NOT NULL,
-  `nome` varchar(100) NOT NULL,
-  `slug` varchar(100) NOT NULL,
-  `ativo` tinyint(1) DEFAULT 1,
-  `created_at` datetime DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Despejando dados para a tabela `categorias`
---
-
-INSERT INTO `categorias` (`id`, `nome`, `slug`, `ativo`, `created_at`) VALUES
-(0, 'Masculino', 'masculino', 1, '2025-08-21 15:02:09'),
-(0, 'Feminino', 'feminino', 1, '2025-08-21 15:02:09'),
-(0, 'Infantil', 'infantil', 1, '2025-08-21 15:02:09');
 
 -- --------------------------------------------------------
 
@@ -110,8 +44,25 @@ CREATE TABLE `imagens` (
   `id` int(11) NOT NULL,
   `produto_id` int(11) NOT NULL,
   `url_imagem` varchar(255) NOT NULL,
-  `ordem` int(11) DEFAULT 0
+  `ordem` int(11) DEFAULT 0,
+  `cor` varchar(50) DEFAULT 'default'
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Despejando dados para a tabela `imagens`
+--
+
+INSERT INTO `imagens` (`id`, `produto_id`, `url_imagem`, `ordem`, `cor`) VALUES
+(0, 1, 'admin/src/uploads/68ab8709bceb7.jpeg', 1, 'default'),
+(0, 1, 'admin/src/uploads/68ab8709bd2ee.jpeg', 2, 'default'),
+(0, 2, 'admin/src/uploads/68ab89e0e09c3.jpeg', 1, 'default'),
+(0, 2, 'admin/src/uploads/68ab89e0e0dd1.jpeg', 2, 'default'),
+(0, 3, 'admin/src/uploads/68ab89ef4be38.jpeg', 1, 'default'),
+(0, 3, 'admin/src/uploads/68ab89ef4c267.jpeg', 2, 'default'),
+(0, 4, 'admin/src/uploads/68ab89ff8ffa6.jpeg', 1, 'default'),
+(0, 4, 'admin/src/uploads/68ab89ff903ff.jpeg', 2, 'default'),
+(0, 5, 'admin/src/uploads/68ab8a0f21e86.jpeg', 1, 'default'),
+(0, 5, 'admin/src/uploads/68ab8a0f22298.jpeg', 2, 'default');
 
 -- --------------------------------------------------------
 
@@ -140,25 +91,35 @@ CREATE TABLE `produtos` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 --
+-- Despejando dados para a tabela `produtos`
+--
+
+INSERT INTO `produtos` (`id`, `categoria_id`, `anime_id`, `nome`, `descricao`, `cores`, `imagem_principal`, `imagem_hover`, `preco`, `preco_original`, `desconto`, `vendas`, `tags`, `status`, `ativo`, `created_at`, `data_cadastro`) VALUES
+(1, NULL, NULL, 'Camisa naruto', '', 'preto,branco', 'admin/src/uploads/68ab8709bceb7.jpeg', NULL, 50.00, 85.00, 0, 0, 'Anime,Naruto', 'ativo', 1, '2025-08-24 18:41:29', '2025-08-24 18:41:29'),
+(2, NULL, NULL, 'Camisa naruto 1', '', 'cinza', 'admin/src/uploads/68ab89e0e09c3.jpeg', NULL, 50.00, 85.00, 0, 0, 'Anime,Naruto', 'ativo', 1, '2025-08-24 18:53:36', '2025-08-24 18:53:36'),
+(3, NULL, NULL, 'Camisa naruto 2', '', 'preto,branco', 'admin/src/uploads/68ab89ef4be38.jpeg', NULL, 50.00, 85.00, 0, 0, 'Anime,Naruto', 'ativo', 1, '2025-08-24 18:53:51', '2025-08-24 18:53:51'),
+(4, NULL, NULL, 'Camisa naruto 3', '', 'preto,branco', 'admin/src/uploads/68ab89ff8ffa6.jpeg', NULL, 50.00, 85.00, 0, 0, 'Anime,Naruto', 'ativo', 1, '2025-08-24 18:54:07', '2025-08-24 18:54:07'),
+(5, NULL, NULL, 'Camisa naruto 4', '', 'preto,branco', 'admin/src/uploads/68ab8a0f21e86.jpeg', NULL, 50.00, 85.00, 0, 0, 'Anime,Naruto', 'ativo', 1, '2025-08-24 18:54:23', '2025-08-24 18:54:23');
+
+--
 -- Índices para tabelas despejadas
 --
 
 --
--- Índices de tabela `admins`
+-- Índices de tabela `produtos`
 --
-ALTER TABLE `admins`
-  ADD PRIMARY KEY (`id`),
-  ADD UNIQUE KEY `usuario` (`usuario`);
+ALTER TABLE `produtos`
+  ADD PRIMARY KEY (`id`);
 
 --
 -- AUTO_INCREMENT para tabelas despejadas
 --
 
 --
--- AUTO_INCREMENT de tabela `admins`
+-- AUTO_INCREMENT de tabela `produtos`
 --
-ALTER TABLE `admins`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
+ALTER TABLE `produtos`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
