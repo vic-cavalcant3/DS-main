@@ -7,6 +7,10 @@ if (!isset($_SESSION['admin_id'])) {
     exit;
 }
 
+// Habilitar exibição de erros para debug
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
+
 // Buscar categorias e animes para os selects
 $categorias = [];
 $animes = [];
@@ -17,8 +21,15 @@ try {
     
     $stmt = $pdo->query("SELECT * FROM animes WHERE ativo = 1 ORDER BY nome");
     $animes = $stmt->fetchAll(PDO::FETCH_ASSOC);
+    
+    // Debug: verificar se os dados foram carregados
+    echo "<!-- DEBUG: Categorias encontradas: " . count($categorias) . " -->\n";
+    echo "<!-- DEBUG: Animes encontrados: " . count($animes) . " -->\n";
+    
 } catch (Exception $e) {
-    // Se as tabelas não existirem, continua sem erro
+    echo "<div class='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>";
+    echo "Erro ao carregar dados básicos: " . htmlspecialchars($e->getMessage());
+    echo "</div>";
 }
 
 // Configurações de upload
@@ -26,44 +37,74 @@ $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/admin/src/uploads/';
 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 $maxSize = 2 * 1024 * 1024; // 2MB
 
+// Debug: verificar diretório de upload
+echo "<!-- DEBUG: Diretório de upload: " . $uploadDir . " -->\n";
+echo "<!-- DEBUG: Diretório existe: " . (is_dir($uploadDir) ? 'SIM' : 'NÃO') . " -->\n";
+
 // Processa o formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $nome = $_POST['nome'];
-    $descricao = $_POST['descricao'];
-    $preco = $_POST['preco'];
-    $preco_original = !empty($_POST['preco_original']) ? $_POST['preco_original'] : null;
-    $desconto = !empty($_POST['desconto']) ? $_POST['desconto'] : 0;
-    $categoria_id = !empty($_POST['categoria_id']) ? $_POST['categoria_id'] : null;
-    $anime_id = !empty($_POST['anime_id']) ? $_POST['anime_id'] : null;
+    echo "<!-- DEBUG: Formulário enviado -->\n";
+    
+    // Debug: mostrar dados recebidos
+    echo "<!-- DEBUG: Dados POST: " . print_r($_POST, true) . " -->\n";
+    
+    $nome = trim($_POST['nome']);
+    $descricao = trim($_POST['descricao']);
+    $preco = floatval($_POST['preco']);
+    $preco_original = !empty($_POST['preco_original']) ? floatval($_POST['preco_original']) : null;
+    $desconto = !empty($_POST['desconto']) ? intval($_POST['desconto']) : 0;
+    $categoria_id = !empty($_POST['categoria_id']) ? intval($_POST['categoria_id']) : null;
+    $anime_id = !empty($_POST['anime_id']) ? intval($_POST['anime_id']) : null;
     $cores = !empty($_POST['cores']) ? implode(',', $_POST['cores']) : null;
-    $tags = $_POST['tags'];
+    $tags = trim($_POST['tags']);
     $imagens = [];
+
+    // Validações básicas
+    if (empty($nome)) {
+        echo "<div class='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>";
+        echo "Erro: Nome do produto é obrigatório";
+        echo "</div>";
+        exit;
+    }
+    
+    if ($preco <= 0) {
+        echo "<div class='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>";
+        echo "Erro: Preço deve ser maior que zero";
+        echo "</div>";
+        exit;
+    }
 
     try {
         // Verifica se o diretório existe, senão cria
         if (!is_dir($uploadDir)) {
-            mkdir($uploadDir, 0755, true);
+            if (!mkdir($uploadDir, 0755, true)) {
+                throw new Exception("Não foi possível criar o diretório de upload: " . $uploadDir);
+            }
         }
 
         // Valida e move as imagens enviadas
-        if (!empty($_FILES['imagens']['name'][0])) {
+        if (!empty($_FILES['imagens']['name'][0]) && $_FILES['imagens']['name'][0] != '') {
+            echo "<!-- DEBUG: Processando imagens -->\n";
+            
             foreach ($_FILES['imagens']['tmp_name'] as $key => $tmpName) {
                 // Verifica se o arquivo foi enviado sem erro
                 if ($_FILES['imagens']['error'][$key] !== UPLOAD_ERR_OK) {
-                    throw new Exception("Erro no upload da imagem: " . $_FILES['imagens']['name'][$key]);
+                    throw new Exception("Erro no upload da imagem: " . $_FILES['imagens']['name'][$key] . " (Código: " . $_FILES['imagens']['error'][$key] . ")");
                 }
                 
                 $fileType = $_FILES['imagens']['type'][$key];
                 $fileSize = $_FILES['imagens']['size'][$key];
                 $fileName = $_FILES['imagens']['name'][$key];
                 
+                echo "<!-- DEBUG: Processando arquivo: $fileName, Tipo: $fileType, Tamanho: $fileSize -->\n";
+                
                 // Validação
                 if (!in_array($fileType, $allowedTypes)) {
-                    throw new Exception("Tipo de arquivo não permitido: " . $fileName);
+                    throw new Exception("Tipo de arquivo não permitido: " . $fileName . " (Tipo: " . $fileType . ")");
                 }
                 
                 if ($fileSize > $maxSize) {
-                    throw new Exception("Arquivo muito grande: " . $fileName);
+                    throw new Exception("Arquivo muito grande: " . $fileName . " (Tamanho: " . round($fileSize/1024/1024, 2) . "MB)");
                 }
                 
                 // Gera nome único para o arquivo
@@ -71,15 +112,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 $uniqueFileName = uniqid() . '.' . $ext;
                 $destino = $uploadDir . $uniqueFileName;
                 
+                echo "<!-- DEBUG: Movendo para: $destino -->\n";
+                
                 if (move_uploaded_file($tmpName, $destino)) {
                     // Caminho relativo para salvar no banco
                     $imagens[] = 'admin/src/uploads/' . $uniqueFileName;
+                    echo "<!-- DEBUG: Imagem salva: " . end($imagens) . " -->\n";
                 } else {
-                    throw new Exception("Erro ao mover arquivo: " . $fileName);
+                    throw new Exception("Erro ao mover arquivo: " . $fileName . " para " . $destino);
                 }
             }
         }
 
+        echo "<!-- DEBUG: Iniciando transação -->\n";
+        
         // Inicia transação
         $pdo->beginTransaction();
         
@@ -90,8 +136,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         // Define imagem principal (primeira imagem ou null)
         $imagem_principal = !empty($imagens) ? $imagens[0] : null;
         
+        echo "<!-- DEBUG: SQL: $sql -->\n";
+        echo "<!-- DEBUG: Parâmetros: nome=$nome, desc=$descricao, preco=$preco, preco_orig=$preco_original, desc=$desconto, cat=$categoria_id, anime=$anime_id, cores=$cores, tags=$tags, img=$imagem_principal -->\n";
+        
         $stmt = $pdo->prepare($sql);
-        $stmt->execute([
+        $result = $stmt->execute([
             $nome, 
             $descricao, 
             $preco, 
@@ -100,50 +149,77 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $categoria_id, 
             $anime_id, 
             $cores, 
-            $tags, 
+            $tags,
             $imagem_principal
         ]);
         
+        if (!$result) {
+            $errorInfo = $stmt->errorInfo();
+            throw new Exception("Erro na execução da query de produtos: " . $errorInfo[2]);
+        }
+        
         $produto_id = $pdo->lastInsertId();
+        echo "<!-- DEBUG: Produto inserido com ID: $produto_id -->\n";
         
         // Debug: verifica se o produto foi inserido
         if (!$produto_id) {
-            throw new Exception("Erro ao inserir produto no banco de dados");
+            throw new Exception("Erro ao inserir produto no banco de dados - ID não retornado");
         }
         
         // Cadastra as imagens no banco
         if (!empty($imagens)) {
+            echo "<!-- DEBUG: Cadastrando " . count($imagens) . " imagens -->\n";
+            
             foreach ($imagens as $ordem => $caminho) {
                 $sql_img = "INSERT INTO imagens (produto_id, url_imagem, ordem) VALUES (?, ?, ?)";
                 $stmt_img = $pdo->prepare($sql_img);
                 $result = $stmt_img->execute([$produto_id, $caminho, $ordem + 1]);
                 
-                // Debug: verifica se a imagem foi inserida
                 if (!$result) {
-                    throw new Exception("Erro ao inserir imagem no banco: " . $caminho);
+                    $errorInfo = $stmt_img->errorInfo();
+                    throw new Exception("Erro ao inserir imagem no banco: " . $caminho . " - " . $errorInfo[2]);
                 }
+                
+                echo "<!-- DEBUG: Imagem inserida: $caminho -->\n";
             }
         }
         
         // Cadastra estoque
         $tamanhos = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
+        $estoque_inserido = 0;
+        
         foreach ($tamanhos as $tamanho) {
             if (!empty($_POST["estoque_$tamanho"]) && $_POST["estoque_$tamanho"] > 0) {
+                $quantidade = intval($_POST["estoque_$tamanho"]);
                 $sql_est = "INSERT INTO estoque (produto_id, tamanho, quantidade) VALUES (?, ?, ?)";
                 $stmt_est = $pdo->prepare($sql_est);
-                $stmt_est->execute([$produto_id, $tamanho, $_POST["estoque_$tamanho"]]);
+                $result = $stmt_est->execute([$produto_id, $tamanho, $quantidade]);
+                
+                if (!$result) {
+                    $errorInfo = $stmt_est->errorInfo();
+                    throw new Exception("Erro ao inserir estoque: " . $errorInfo[2]);
+                }
+                
+                $estoque_inserido++;
+                echo "<!-- DEBUG: Estoque inserido: $tamanho = $quantidade -->\n";
             }
         }
         
+        echo "<!-- DEBUG: Total de estoques inseridos: $estoque_inserido -->\n";
+        
         // Confirma transação
         $pdo->commit();
+        echo "<!-- DEBUG: Transação confirmada com sucesso -->\n";
         
-        echo "<script>alert('Produto cadastrado com sucesso!'); window.location.href='listar_produtos.php';</script>";
+        echo "<script>alert('Produto cadastrado com sucesso! ID: $produto_id'); window.location.href='listar_produtos.php';</script>";
         
     } catch (Exception $e) {
+        echo "<!-- DEBUG: Erro capturado: " . $e->getMessage() . " -->\n";
+        
         // Desfaz transação
         if ($pdo->inTransaction()) {
             $pdo->rollback();
+            echo "<!-- DEBUG: Transação desfeita -->\n";
         }
         
         // Remove imagens já salvas em caso de erro
@@ -151,6 +227,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $fullPath = $uploadDir . basename($caminho);
             if (file_exists($fullPath)) {
                 unlink($fullPath);
+                echo "<!-- DEBUG: Imagem removida: $fullPath -->\n";
             }
         }
         
@@ -161,7 +238,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -316,6 +392,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 </label>
                             </div>
                         </div>
+
+                         <div class="md:col-span-2">
+                            <label class="block text-gray-700 mb-2">Tags</label>
+                            <input type="text" name="tags" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Anime, Naruto, Dragon Ball">
+                                </div>
                         
                     </div>
                 </div>
@@ -416,6 +497,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             const event = new Event('change');
             fileInput.dispatchEvent(event);
         });
+
+        //TROCA DE CORRR
+
+        
     </script>
 </body>
 </html>

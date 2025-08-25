@@ -198,7 +198,7 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-black sticky top-0 z-50 shadow-md" id="navbar">
+     <nav class="bg-black sticky top-0 z-50 shadow-md" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <!-- Mobile menu button -->
@@ -210,32 +210,31 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
 
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center justify-center">
-                    <a href="../../index.html" class="text-2xl font-bold text-gray-900 hover:opacity-90 transition-opacity">
+                    <a href="../../index.php" class="text-2xl font-bold text-gray-900 hover:opacity-90 transition-opacity">
                         <img src="../../client/src/Flamma-logo.png" alt="Flamma Index" class="h-10 md:h-12 w-auto">
                     </a>
                 </div>
+
 
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-6">
                     <a href="produtos.php"
                         class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Produtos</a>
                     <a href="masculino.php"
-                        class="text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Masculino</a>
-                      <a href="feminino.php"
-                        class="text-white px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminina</a>
+                        class="text-red-500 hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Masculino</a>
+                    <a href="feminino.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminino</a>
                     <a href="infantil.php"
                         class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Infantil</a>
-                    <a href="#"
-                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Sobre</a>
-                    <a href="#"
-                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Contato</a>
+                    <a href="ajuda.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Central de Ajuda</a>
                 </div>
 
                 <!-- Right Icons -->
                 <div class="flex items-center space-x-6">
-                    <button class="text-white hover:text-red-500 transition-colors duration-200">
+                    <!-- <button class="text-white hover:text-red-500 transition-colors duration-200">
                         <i class="fas fa-search text-xl"></i>
-                    </button>
+                    </button> -->
                     <button class="text-white hover:text-red-500 transition-colors duration-200">
                         <i class="far fa-user text-xl"></i>
                     </button>
@@ -253,14 +252,14 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div id="mobile-menu" class="hidden md:hidden bg-black border-t border-gray-800">
             <div class="px-2 pt-2 pb-3 space-y-1">
                 <a href="produtos.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Produtos</a>
-                <a href="masculino.php" class="block px-3 py-3 text-base font-medium text-white bg-gray-900">Masculino</a>
+                <a href="masculino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
                 <a href="feminino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
                 <a href="infantil.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
-                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Sobre</a>
-                <a href="#" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Contato</a>
+                <a href="ajuda.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Central de Ajuda</a>
             </div>
         </div>
     </nav>
+
 
     <!-- Page Header -->
     <div class="bg-black hero-banner text-white py-16">
@@ -569,51 +568,50 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <!-- Footer -->
-    <footer class="bg-black text-white py-12 mt-16">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-8">
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">FLAMMA</h3>
-                    <p class="text-gray-400">Camisetas de anime com design exclusivo e qualidade premium.</p>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">PRODUTOS</h3>
-                    <ul class="space-y-2">
-                        <li><a href="masculino.php" class="text-gray-400 hover:text-red-500">Masculino</a></li>
-                        <li><a href="feminino.php" class="text-gray-400 hover:text-red-500">Feminino</a></li>
-                        <li><a href="infantil.php" class="text-gray-400 hover:text-red-500">Infantil</a></li>
-                        <li><a href="produtos.php" class="text-gray-400 hover:text-red-500">Todos os Produtos</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">SUPORTE</h3>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="text-gray-400 hover:text-red-500">Central de Ajuda</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-red-500">Trocas e Devoluções</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-red-500">Entregas</a></li>
-                        <li><a href="#" class="text-gray-400 hover:text-red-500">Fale Conosco</a></li>
-                    </ul>
-                </div>
-                <div>
-                    <h3 class="text-lg font-semibold mb-4">NEWSLETTER</h3>
-                    <p class="text-gray-400 mb-4">Cadastre-se para receber nossas novidades e promoções.</p>
-                    <form class="flex">
-                        <input type="email" placeholder="Seu e-mail" class="px-4 py-2 rounded-l-md w-full text-gray-900">
-                        <button type="submit" class="bg-red-600 px-4 py-2 rounded-r-md hover:bg-red-700">OK</button>
-                    </form>
-                </div>
+<footer class="bg-black text-white pt-12 pb-6">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">FLAMMA</h3>
+                <p class="text-gray-400 text-sm">Camisetas premium de anime para verdadeiros fãs.</p>
             </div>
-            <div class="border-t border-gray-800 mt-8 pt-8 flex flex-col md:flex-row justify-between items-center">
-                <p class="text-gray-400">© 2023 Flamma. Todos os direitos reservados.</p>
-                <div class="flex space-x-4 mt-4 md:mt-0">
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-instagram"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-facebook"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-twitter"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-tiktok"></i></a>
+
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">PRODUTOS</h3>
+                <ul class="space-y-2">
+                    <li><a href="masculino.php" class="text-gray-400 hover:text-red-500 text-sm">Masculino</a></li>
+                    <li><a href="feminino.php" class="text-gray-400 hover:text-red-500 text-sm">Feminino</a></li>
+                    <li><a href="infantil.php" class="text-gray-400 hover:text-red-500 text-sm">Infantil</a></li>
+                    <li><a href="produtos.php" class="text-gray-400 hover:text-red-500 text-sm">Todos os Produtos</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">SUPORTE</h3>
+                <ul class="space-y-2">
+                    <li><a href="ajuda.php" class="text-gray-400 hover:text-red-500 text-sm">Central de Ajuda</a></li>
+                    <li><a href="ajuda.php#exchanges" class="text-gray-400 hover:text-red-500 text-sm">Trocas e Devoluções</a></li>
+                    <li><a href="ajuda.php#delivery" class="text-gray-400 hover:text-red-500 text-sm">Entregas</a></li>
+                    <li><a href="contato.php" class="text-gray-400 hover:text-red-500 text-sm">Fale Conosco</a></li>
+                </ul>
+            </div>
+
+            <div>
+                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">REDES SOCIAIS</h3>
+                <div class="flex space-x-4">
+                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-instagram text-lg"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-twitter text-lg"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-facebook-f text-lg"></i></a>
+                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-tiktok text-lg"></i></a>
                 </div>
             </div>
         </div>
-    </footer>
+
+        <div class="border-t border-gray-800 pt-6 text-center">
+            <p class="text-gray-400 text-sm">© 2025 Flamma. Todos os direitos reservados.</p>
+        </div>
+    </div>
+</footer>
 
     <script>
         // Mobile menu toggle
