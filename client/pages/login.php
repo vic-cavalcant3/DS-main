@@ -2,37 +2,88 @@
 session_start();
 require '../pages/utils/conexao.php';
 
+// Configurações para login social (substitua com suas próprias credenciais)
+define('GOOGLE_CLIENT_ID', 'SEU_GOOGLE_CLIENT_ID');
+define('GOOGLE_CLIENT_SECRET', 'SEU_GOOGLE_CLIENT_SECRET');
+define('GOOGLE_REDIRECT_URI', 'http://seusite.com/login.php');
+
+define('FACEBOOK_APP_ID', 'SEU_FACEBOOK_APP_ID');
+define('FACEBOOK_APP_SECRET', 'SEU_FACEBOOK_APP_SECRET');
+define('FACEBOOK_REDIRECT_URI', 'http://seusite.com/login.php');
+
+// Processar formulário de login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    $email = $_POST['email'];
-    $senha = $_POST['senha'];
-    
-    try {
-        $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
-        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+    if (isset($_POST['email']) && isset($_POST['senha'])) {
+        $email = $_POST['email'];
+        $senha = $_POST['senha'];
         
-        $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = :email");
-        $stmt->bindParam(':email', $email);
-        $stmt->execute();
-        $usuario = $stmt->fetch();
-        
-        if ($usuario && password_verify($senha, $usuario['senha'])) {
-            $_SESSION['usuario_id'] = $usuario['id'];
-            $_SESSION['usuario_nome'] = $usuario['nome'];
+        try {
+            $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
             
-            // Atualizar último login
-            $stmt = $pdo->prepare("UPDATE usuarios SET ultimo_login = NOW() WHERE id = :id");
-            $stmt->bindParam(':id', $usuario['id']);
+            $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = :email");
+            $stmt->bindParam(':email', $email);
             $stmt->execute();
+            $usuario = $stmt->fetch();
             
-            header('Location: usuario.php');
-            exit();
-        } else {
-            $erro = "E-mail ou senha inválidos";
+            if ($usuario && password_verify($senha, $usuario['senha'])) {
+                $_SESSION['usuario_id'] = $usuario['id'];
+                $_SESSION['usuario_nome'] = $usuario['nome'];
+                
+                // Atualizar último login
+                $stmt = $pdo->prepare("UPDATE usuarios SET ultimo_login = NOW() WHERE id = :id");
+                $stmt->bindParam(':id', $usuario['id']);
+                $stmt->execute();
+                
+                header('Location: usuario.php');
+                exit();
+            } else {
+                $erro = "E-mail ou senha inválidos";
+            }
+        } catch (PDOException $e) {
+            $erro = "Erro ao conectar com o banco de dados";
         }
-    } catch (PDOException $e) {
-        $erro = "Erro ao conectar com o banco de dados";
+    }
+    
+    // Processar recuperação de senha
+    if (isset($_POST['recuperar_email'])) {
+        $email_recuperacao = $_POST['recuperar_email'];
+        
+        try {
+            $pdo = new PDO("mysql:host=$host;dbname=$dbname", $username, $password);
+            $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+            
+            $stmt = $pdo->prepare("SELECT * FROM usuarios WHERE email = :email");
+            $stmt->bindParam(':email', $email_recuperacao);
+            $stmt->execute();
+            $usuario = $stmt->fetch();
+            
+            if ($usuario) {
+                // Gerar token de recuperação (exemplo simples)
+                $token = bin2hex(random_bytes(32));
+                $expiracao = date("Y-m-d H:i:s", strtotime('+1 hour'));
+                
+                // Salvar token no banco de dados
+                $stmt = $pdo->prepare("UPDATE usuarios SET token_recuperacao = :token, expiracao_token = :expiracao WHERE email = :email");
+                $stmt->bindParam(':token', $token);
+                $stmt->bindParam(':expiracao', $expiracao);
+                $stmt->bindParam(':email', $email_recuperacao);
+                $stmt->execute();
+                
+                // Em um sistema real, aqui você enviaria um e-mail com o link de recuperação
+                $sucesso_recuperacao = "Instruções de recuperação enviadas para seu e-mail!";
+            } else {
+                $erro_recuperacao = "E-mail não encontrado em nossa base de dados.";
+            }
+        } catch (PDOException $e) {
+            $erro_recuperacao = "Erro ao processar solicitação. Tente novamente.";
+        }
     }
 }
+
+// Gerar URLs para login social (implementação básica)
+$google_login_url = "https://accounts.google.com/o/oauth2/auth?client_id=".GOOGLE_CLIENT_ID."&redirect_uri=".urlencode(GOOGLE_REDIRECT_URI)."&response_type=code&scope=email profile";
+$facebook_login_url = "https://www.facebook.com/v12.0/dialog/oauth?client_id=".FACEBOOK_APP_ID."&redirect_uri=".urlencode(FACEBOOK_REDIRECT_URI)."&scope=email";
 ?>
 
 <!DOCTYPE html>
@@ -43,120 +94,145 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <title>Login | Flamma</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         * {
-            font-family: 'Poppins', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
         }
         
         body {
             background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
             min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .card {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
         }
         
-        .card {
-            backdrop-filter: blur(10px);
-            background: rgba(255, 255, 255, 0.85);
-            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.08);
-            border-radius: 16px;
-            border: 1px solid rgba(255, 255, 255, 0.5);
+        .input-group {
+            position: relative;
+            margin-bottom: 1rem;
+        }
+        
+        .input-field {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+            background: white;
+        }
+        
+        .input-field:focus {
+            outline: none;
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
         }
         
         .btn-primary {
             background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.25);
+            color: white;
+            padding: 0.875rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            border: none;
+            cursor: pointer;
+            width: 100%;
         }
         
         .btn-primary:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 12px rgba(239, 68, 68, 0.3);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
         }
         
-        .btn-primary:active {
-            transform: translateY(0);
+        .btn-social {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            background: white;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            color: #4a5568;
         }
         
-        .input-field {
-            transition: all 0.3s ease;
-            background: rgba(255, 255, 255, 0.9);
+        .btn-social:hover {
+            border-color: #cbd5e0;
+            transform: translateY(-1px);
         }
         
-        .input-field:focus {
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-        }
-        
-        .flamma-logo {
-            filter: drop-shadow(0 4px 6px rgba(0, 0, 0, 0.1));
-        }
-        
-        .overlay {
-            display: none;
+        .modal {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
             z-index: 1000;
             opacity: 0;
-            transition: opacity 0.3s ease;
-            backdrop-filter: blur(5px);
+            visibility: hidden;
+            transition: all 0.3s ease;
         }
         
-        .overlay.active {
-            display: flex;
+        .modal.active {
             opacity: 1;
+            visibility: visible;
         }
         
-        .overlay-content {
-            background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);
-            margin: auto;
-            padding: 2.5rem;
-            border-radius: 20px;
+        .modal-content {
+            background: white;
+            border-radius: 12px;
+            padding: 2rem;
             width: 90%;
-            max-width: 500px;
+            max-width: 400px;
             max-height: 90vh;
             overflow-y: auto;
-            transform: translateY(-50px) scale(0.95);
-            transition: transform 0.4s ease;
-            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.25);
             position: relative;
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
         }
         
-        .overlay.active .overlay-content {
-            transform: translateY(0) scale(1);
+        .modal.active .modal-content {
+            transform: scale(1);
         }
         
         .close-btn {
             position: absolute;
-            top: 20px;
-            right: 20px;
-            width: 40px;
-            height: 40px;
+            top: 1rem;
+            right: 1rem;
+            background: #f7fafc;
+            border: none;
             border-radius: 50%;
+            width: 32px;
+            height: 32px;
             display: flex;
             align-items: center;
             justify-content: center;
-            background: #f1f5f9;
             cursor: pointer;
-            transition: all 0.3s ease;
-            color: #64748b;
-            font-size: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+            transition: background 0.2s ease;
         }
         
         .close-btn:hover {
-            background: #e2e8f0;
-            transform: rotate(90deg);
-            color: #334155;
+            background: #edf2f7;
         }
         
         .divider {
             display: flex;
             align-items: center;
-            text-align: center;
-            color: #64748b;
+            margin: 1.5rem 0;
+            color: #718096;
             font-size: 0.875rem;
         }
         
@@ -164,230 +240,230 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         .divider::after {
             content: '';
             flex: 1;
-            border-bottom: 1px solid #e2e8f0;
+            height: 1px;
+            background: #e2e8f0;
         }
         
         .divider::before {
-            margin-right: 0.5em;
+            margin-right: 1rem;
         }
         
         .divider::after {
-            margin-left: 0.5em;
+            margin-left: 1rem;
+        }
+        
+        .error-msg {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .success-msg {
+            background: #c6f6d5;
+            color: #276749;
+            padding: 0.75rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+        }
+        
+        .text-link {
+            color: #ef4444;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .text-link:hover {
+            color: #dc2626;
+            text-decoration: underline;
         }
         
         .password-toggle {
+            position: absolute;
+            right: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
             cursor: pointer;
-            transition: color 0.2s;
+            color: #a0aec0;
+            transition: color 0.2s ease;
         }
         
         .password-toggle:hover {
             color: #ef4444;
         }
         
-        .floating-label {
-            position: relative;
-            margin-bottom: 1.5rem;
-        }
-        
-        .floating-input {
-            width: 100%;
-            padding: 1.2rem 1rem 0.6rem;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: all 0.2s;
-        }
-        
-        .floating-input:focus {
-            outline: none;
-            border-color: #ef4444;
-            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.2);
-        }
-        
-        .floating-label-text {
-            position: absolute;
-            top: 50%;
-            left: 1rem;
-            transform: translateY(-50%);
-            color: #94a3b8;
-            pointer-events: none;
-            transition: all 0.2s;
-        }
-        
-        .floating-input:focus + .floating-label-text,
-        .floating-input:not(:placeholder-shown) + .floating-label-text {
-            top: 0.6rem;
-            transform: translateY(0);
-            font-size: 0.75rem;
-            color: #ef4444;
-            background: white;
-            padding: 0 0.4rem;
-        }
-        
         @media (max-width: 640px) {
-            .overlay-content {
+            .modal-content {
                 padding: 1.5rem;
-                border-radius: 16px;
+                margin: 1rem;
             }
-        }
-        
-        .animate-float {
-            animation: float 6s ease-in-out infinite;
-        }
-        
-        @keyframes float {
-            0% { transform: translateY(0px); }
-            50% { transform: translateY(-10px); }
-            100% { transform: translateY(0px); }
         }
     </style>
 </head>
-<body class="flex items-center justify-center min-h-screen p-4">
-    <div class="card w-full max-w-md p-8">
+<body class="p-4">
+   <div class="card w-full max-w-md p-8">
         <div class="text-center mb-8">
-            <img class="mx-auto h-16 w-auto flamma-logo animate-float" src="../../client/src/Flamma-logo.png" alt="Flamma">
-            <h1 class="mt-6 text-3xl font-bold text-gray-900">
+            <h1 class="text-2xl font-bold text-gray-900 mb-2">
                 Bem-vindo de volta
             </h1>
-            <p class="mt-2 text-gray-600">Entre na sua conta para continuar</p>
+            <p class="text-gray-600">Entre na sua conta Flamma</p>
         </div>
         
-        <form class="space-y-5" method="POST">
+        <form method="POST" class="space-y-4">
             <?php if (isset($erro)): ?>
-                <div class="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg flex items-center">
+                <div class="error-msg">
                     <i class="fas fa-exclamation-circle mr-2"></i>
                     <?php echo $erro; ?>
                 </div>
             <?php endif; ?>
             
-            <div class="floating-label">
-                <input type="email" id="email" name="email" class="floating-input" placeholder=" " required>
-                <label for="email" class="floating-label-text">E-mail</label>
-                <div class="absolute right-3 top-3 text-gray-400">
-                    <i class="fas fa-envelope"></i>
-                </div>
+            <div class="input-group">
+                <input type="email" name="email" class="input-field" placeholder="E-mail" required>
             </div>
             
-            <div class="floating-label">
-                <input type="password" id="senha" name="senha" class="floating-input" placeholder=" " required>
-                <label for="senha" class="floating-label-text">Senha</label>
-                <div class="absolute right-3 top-3 text-gray-400 password-toggle" id="togglePassword">
+            <div class="input-group">
+                <input type="password" id="password" name="senha" class="input-field" placeholder="Senha" required>
+                <span class="password-toggle" onclick="togglePassword('password')">
                     <i class="fas fa-eye-slash"></i>
-                </div>
+                </span>
             </div>
             
             <div class="flex items-center justify-between text-sm">
                 <label class="flex items-center">
-                    <input type="checkbox" class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
+                    <input type="checkbox" class="h-4 w-4 text-indigo-600 rounded">
                     <span class="ml-2 text-gray-600">Lembrar-me</span>
                 </label>
-                <a href="#" class="text-red-600 hover:text-red-500 font-medium">Esqueceu a senha?</a>
+                <a href="#" onclick="openModal('forgot-modal')" class="text-link">Esqueceu a senha?</a>
             </div>
 
-            <button type="submit" class="btn-primary w-full py-3 px-4 rounded-xl text-white font-medium text-lg">
+            <button type="submit" class="btn-primary">
                 Entrar
             </button>
             
-            <div class="divider text-gray-500">ou</div>
+            <div class="divider">ou</div>
             
             <div class="grid grid-cols-2 gap-3">
-                <a href="#" class="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
-                    <i class="fab fa-google text-red-600 mr-2"></i>
-                    <span class="text-sm font-medium">Google</span>
+                <a href="#" class="btn-social">
+                    <i class="fab fa-google text-red-500 mr-2"></i>
+                    Google
                 </a>
-                <a href="#" class="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
+                <a href="#" class="btn-social">
                     <i class="fab fa-facebook-f text-blue-600 mr-2"></i>
-                    <span class="text-sm font-medium">Facebook</span>
+                    Facebook
                 </a>
             </div>
             
             <div class="text-center pt-4">
-                <p class="text-gray-600">
+                <p class="text-gray-600 text-sm">
                     Não tem uma conta? 
-                    <a href="#" id="open-cadastro" class="text-red-600 hover:text-red-500 font-medium ml-1">
-                        Cadastre-se
-                    </a>
+                    <a href="#" onclick="openModal('register-modal')" class="text-link">Cadastre-se</a>
                 </p>
             </div>
         </form>
     </div>
 
-    <!-- Overlay de Cadastro -->
-    <div id="cadastro-overlay" class="overlay">
-        <div class="overlay-content">
-            <span class="close-btn" id="close-cadastro">&times;</span>
+    <!-- Modal de Cadastro -->
+    <div id="register-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('register-modal')">
+                <i class="fas fa-times"></i>
+            </button>
             
             <div class="text-center mb-6">
-                <h2 class="text-2xl font-bold text-gray-900">Criar Conta</h2>
-                <p class="text-gray-600">Junte-se à comunidade Flamma</p>
+                <h2 class="text-xl font-bold text-gray-900">Criar Conta</h2>
+                <p class="text-gray-600 text-sm">Junte-se à Flamma</p>
             </div>
             
-            <form id="form-cadastro" class="space-y-4">
-                <div class="floating-label">
-                    <input type="text" id="nome-completo" name="nome-completo" class="floating-input" placeholder=" " required>
-                    <label for="nome-completo" class="floating-label-text">Nome Completo</label>
-                    <div class="absolute right-3 top-3 text-gray-400">
-                        <i class="fas fa-user"></i>
-                    </div>
+            <form action="cadastrar.php" method="POST" class="space-y-4">
+                <div class="input-group">
+                    <input type="text" name="nome-completo" class="input-field" placeholder="Nome completo" required>
                 </div>
                 
-                <div class="floating-label">
-                    <input type="email" id="email-cadastro" name="email-cadastro" class="floating-input" placeholder=" " required>
-                    <label for="email-cadastro" class="floating-label-text">E-mail</label>
-                    <div class="absolute right-3 top-3 text-gray-400">
-                        <i class="fas fa-envelope"></i>
-                    </div>
+                <div class="input-group">
+                    <input type="email" name="email-cadastro" class="input-field" placeholder="E-mail" required>
                 </div>
                 
-                <div class="floating-label">
-                    <input type="password" id="senha-cadastro" name="senha-cadastro" class="floating-input" placeholder=" " required>
-                    <label for="senha-cadastro" class="floating-label-text">Senha</label>
-                    <div class="absolute right-3 top-3 text-gray-400 password-toggle" id="togglePasswordCadastro">
+                <div class="input-group">
+                    <input type="password" id="password-register" name="senha-cadastro" class="input-field" placeholder="Senha" required>
+                    <span class="password-toggle" onclick="togglePassword('password-register')">
                         <i class="fas fa-eye-slash"></i>
-                    </div>
+                    </span>
                 </div>
                 
-                <div class="floating-label">
-                    <input type="password" id="confirmar-senha" name="confirmar-senha" class="floating-input" placeholder=" " required>
-                    <label for="confirmar-senha" class="floating-label-text">Confirmar Senha</label>
-                    <div class="absolute right-3 top-3 text-gray-400 password-toggle" id="togglePasswordConfirm">
+                <div class="input-group">
+                    <input type="password" id="password-confirm" name="confirmar-senha" class="input-field" placeholder="Confirmar senha" required>
+                    <span class="password-toggle" onclick="togglePassword('password-confirm')">
                         <i class="fas fa-eye-slash"></i>
-                    </div>
+                    </span>
                 </div>
                 
-                <div class="flex items-start pt-2">
-                    <div class="flex items-center h-5">
-                        <input type="checkbox" id="termos" name="termos" required 
-                            class="h-4 w-4 text-red-600 focus:ring-red-500 border-gray-300 rounded">
-                    </div>
-                    <label for="termos" class="ml-2 block text-sm text-gray-700">
-                        Concordo com os <a href="#" class="text-red-600 hover:text-red-500">termos e condições</a> e política de privacidade
-                    </label>
-                </div>
+                <label class="flex items-start text-sm">
+                    <input type="checkbox" name="termos" required class="h-4 w-4 text-indigo-600 rounded mr-2 mt-0.5">
+                    <span class="text-gray-700">
+                        Concordo com os <a href="#" class="text-link">termos</a> e <a href="#" class="text-link">privacidade</a>
+                    </span>
+                </label>
                 
-                <button type="submit" class="btn-primary w-full py-3 px-4 rounded-xl text-white font-medium text-lg mt-4">
+                <button type="submit" class="btn-primary">
                     Criar Conta
                 </button>
                 
-                <div class="divider text-gray-500">ou</div>
+                <div class="text-center">
+                    <p class="text-gray-600 text-sm">
+                        Já tem conta? 
+                        <a href="#" onclick="closeModal('register-modal')" class="text-link">Fazer login</a>
+                    </p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Recuperação -->
+    <div id="forgot-modal" class="modal">
+        <div class="modal-content">
+            <button class="close-btn" onclick="closeModal('forgot-modal')">
+                <i class="fas fa-times"></i>
+            </button>
+            
+            <div class="text-center mb-6">
+                <h2 class="text-xl font-bold text-gray-900">Recuperar Senha</h2>
+                <p class="text-gray-600 text-sm">Digite seu e-mail para receber as instruções</p>
+            </div>
+            
+            <form method="POST" class="space-y-4">
+                <?php if (isset($erro_recuperacao)): ?>
+                    <div class="error-msg">
+                        <i class="fas fa-exclamation-circle mr-2"></i>
+                        <?php echo $erro_recuperacao; ?>
+                    </div>
+                <?php endif; ?>
                 
-                <div class="grid grid-cols-2 gap-3">
-                    <a href="#" class="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
-                        <i class="fab fa-google text-red-600 mr-2"></i>
-                        <span class="text-sm font-medium">Google</span>
-                    </a>
-                    <a href="#" class="flex items-center justify-center py-2.5 px-4 border border-gray-300 rounded-xl hover:bg-gray-50 transition-colors">
-                        <i class="fab fa-facebook-f text-blue-600 mr-2"></i>
-                        <span class="text-sm font-medium">Facebook</span>
-                    </a>
+                <?php if (isset($sucesso_recuperacao)): ?>
+                    <div class="success-msg">
+                        <i class="fas fa-check-circle mr-2"></i>
+                        <?php echo $sucesso_recuperacao; ?>
+                    </div>
+                <?php endif; ?>
+                
+                <div class="input-group">
+                    <input type="email" name="recuperar_email" class="input-field" placeholder="Seu e-mail" required>
                 </div>
                 
-                <div class="text-center pt-2">
+                <button type="submit" class="btn-primary">
+                    Enviar Instruções
+                </button>
+                
+                <div class="text-center">
                     <p class="text-gray-600 text-sm">
-                        Já tem uma conta? 
-                        <a href="#" class="text-red-600 hover:text-red-500 font-medium" id="fazer-login">
-                            Fazer login
-                        </a>
+                        Lembrou sua senha? 
+                        <a href="#" onclick="closeModal('forgot-modal')" class="text-link">Fazer login</a>
                     </p>
                 </div>
             </form>
@@ -395,113 +471,56 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     </div>
 
     <script>
-        // Controle do overlay de cadastro
-        const overlay = document.getElementById('cadastro-overlay');
-        const openBtn = document.getElementById('open-cadastro');
-        const closeBtn = document.getElementById('close-cadastro');
-        const formCadastro = document.getElementById('form-cadastro');
-        const fazerLoginBtn = document.getElementById('fazer-login');
-
-        // Abrir overlay
-        openBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            overlay.classList.add('active');
+        function openModal(modalId) {
+            document.getElementById(modalId).classList.add('active');
             document.body.style.overflow = 'hidden';
-        });
-
-        // Fechar overlay
-        closeBtn.addEventListener('click', function() {
-            overlay.classList.remove('active');
+        }
+        
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.remove('active');
             document.body.style.overflow = 'auto';
-        });
-
-        // Fechar ao clicar no link "Fazer login"
-        fazerLoginBtn.addEventListener('click', function(e) {
-            e.preventDefault();
-            overlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-        });
-
-        // Fechar ao clicar fora do conteúdo
-        overlay.addEventListener('click', function(e) {
-            if (e.target === overlay) {
-                overlay.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        });
-
-        // Fechar com ESC
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && overlay.classList.contains('active')) {
-                overlay.classList.remove('active');
-                document.body.style.overflow = 'auto';
-            }
-        });
-
-        // Validação do formulário de cadastro
-        formCadastro.addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const senha = document.getElementById('senha-cadastro').value;
-            const confirmarSenha = document.getElementById('confirmar-senha').value;
-            
-            if (senha !== confirmarSenha) {
-                alert('As senhas não coincidem!');
-                return;
-            }
-            
-            if (!document.getElementById('termos').checked) {
-                alert('Você precisa aceitar os termos e condições!');
-                return;
-            }
-            
-            // Simulação de cadastro bem-sucedido
-            alert('Conta criada com sucesso! Você já pode fazer login.');
-            overlay.classList.remove('active');
-            document.body.style.overflow = 'auto';
-            formCadastro.reset();
-            
-            // Em um sistema real, aqui você faria uma requisição AJAX para o backend
-            // para processar o cadastro do usuário
-        });
-
-        // Funcionalidade de mostrar/ocultar senha
-        function setupPasswordToggle(toggleId, inputId) {
-            const toggle = document.getElementById(toggleId);
+        }
+        
+        function togglePassword(inputId) {
             const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
             
-            if (toggle && input) {
-                toggle.addEventListener('click', function() {
-                    if (input.type === 'password') {
-                        input.type = 'text';
-                        toggle.innerHTML = '<i class="fas fa-eye"></i>';
-                    } else {
-                        input.type = 'password';
-                        toggle.innerHTML = '<i class="fas fa-eye-slash"></i>';
-                    }
-                });
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye-slash';
             }
         }
         
-        // Configurar os toggles de senha
-        setupPasswordToggle('togglePassword', 'senha');
-        setupPasswordToggle('togglePasswordCadastro', 'senha-cadastro');
-        setupPasswordToggle('togglePasswordConfirm', 'confirmar-senha');
-
-        // Adicionar máscaras aos campos (opcional)
-        document.getElementById('telefone-cadastro')?.addEventListener('input', function(e) {
-            let value = e.target.value.replace(/\D/g, '');
-            if (value.length > 11) value = value.slice(0, 11);
-            
-            if (value.length > 10) {
-                value = value.replace(/^(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
-            } else if (value.length > 6) {
-                value = value.replace(/^(\d{2})(\d{4})(\d{0,4})/, '($1) $2-$3');
-            } else if (value.length > 2) {
-                value = value.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+        // Fechar modal clicando fora
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === modal) {
+                    closeModal(modal.id);
+                }
+            });
+        });
+        
+        // Fechar modal com ESC
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                document.querySelectorAll('.modal.active').forEach(modal => {
+                    closeModal(modal.id);
+                });
             }
+        });
+        
+        // Validação simples do formulário de cadastro
+        document.querySelector('#register-modal form').addEventListener('submit', function(e) {
+            const senha = document.querySelector('input[name="senha-cadastro"]').value;
+            const confirmar = document.querySelector('input[name="confirmar-senha"]').value;
             
-            e.target.value = value;
+            if (senha !== confirmar) {
+                e.preventDefault();
+                alert('As senhas não coincidem!');
+            }
         });
     </script>
 </body>

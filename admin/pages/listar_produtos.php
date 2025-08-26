@@ -343,119 +343,118 @@ try {
     </div>
 
     <script>
-        // Sistema de abas
-        document.querySelectorAll('.tab-button').forEach(button => {
-            button.addEventListener('click', () => {
-                // Remove a classe active de todos os botões e conteúdos
-                document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
-                document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-                
-                // Adiciona a classe active ao botão clicado
-                button.classList.add('active');
-                
-                // Mostra o conteúdo correspondente
-                const tabId = button.getAttribute('data-tab');
-                document.getElementById(`tab-${tabId}`).classList.add('active');
-            });
-        });
+// Sistema de abas
+document.querySelectorAll('.tab-button').forEach(button => {
+    button.addEventListener('click', () => {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+        button.classList.add('active');
+        const tabId = button.getAttribute('data-tab');
+        document.getElementById(`tab-${tabId}`).classList.add('active');
+    });
+});
 
-        // Preview de novas imagens no modal de edição
-        const editarFileInput = document.getElementById('editar-file-input');
-        const editarPreviewContainer = document.getElementById('editar-preview-container');
-        
-        editarFileInput.addEventListener('change', function() {
-            editarPreviewContainer.innerHTML = '';
-            
-            if (this.files) {
-                Array.from(this.files).forEach(file => {
-                    if (file.type.startsWith('image/') && file.size <= 2 * 1024 * 1024) {
-                        const reader = new FileReader();
-                        
-                        reader.onload = function(e) {
-                            const preview = document.createElement('div');
-                            preview.className = 'relative';
-                            preview.innerHTML = `
-                                <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
-                                <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                                    <i class="fas fa-times text-xs"></i>
-                                </button>
-                            `;
-                            preview.querySelector('button').addEventListener('click', () => {
-                                preview.remove();
-                            });
-                            editarPreviewContainer.appendChild(preview);
-                        }
-                        
-                        reader.readAsDataURL(file);
-                    }
-                });
+// Preview de novas imagens
+const editarFileInput = document.getElementById('editar-file-input');
+const editarPreviewContainer = document.getElementById('editar-preview-container');
+
+editarFileInput.addEventListener('change', function() {
+    editarPreviewContainer.innerHTML = '';
+    if (this.files) {
+        Array.from(this.files).forEach(file => {
+            if (file.type.startsWith('image/') && file.size <= 2 * 1024 * 1024) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.createElement('div');
+                    preview.className = 'relative';
+                    preview.innerHTML = `
+                        <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                        <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                            <i class="fas fa-times text-xs"></i>
+                        </button>
+                    `;
+                    preview.querySelector('button').addEventListener('click', () => preview.remove());
+                    editarPreviewContainer.appendChild(preview);
+                }
+                reader.readAsDataURL(file);
             }
         });
+    }
+});
 
-        // Drag and drop para o modal de edição
-        const editarUploadArea = document.querySelector('#tab-imagens .file-upload');
-        
-        editarUploadArea.addEventListener('dragover', (e) => {
-            e.preventDefault();
-            editarUploadArea.classList.add('border-red-400', 'bg-red-50');
-        });
-        
-        editarUploadArea.addEventListener('dragleave', () => {
-            editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
-        });
-        
-        editarUploadArea.addEventListener('drop', (e) => {
-            e.preventDefault();
-            editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
-            editarFileInput.files = e.dataTransfer.files;
-            const event = new Event('change');
-            editarFileInput.dispatchEvent(event);
-        });
+// Drag and drop
+const editarUploadArea = document.querySelector('#tab-imagens .file-upload');
+editarUploadArea.addEventListener('dragover', e => {
+    e.preventDefault();
+    editarUploadArea.classList.add('border-red-400', 'bg-red-50');
+});
+editarUploadArea.addEventListener('dragleave', () => {
+    editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
+});
+editarUploadArea.addEventListener('drop', e => {
+    e.preventDefault();
+    editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
+    editarFileInput.files = e.dataTransfer.files;
+    editarFileInput.dispatchEvent(new Event('change'));
+});
 
-       // Abrir modal de edição - código atualizado para exibir imagens
+// Abrir modal e preencher campos
 document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
     btn.addEventListener('click', async () => {
         const id = btn.dataset.id;
-        
         try {
-            // Busca produto via AJAX
             const response = await fetch(`../utils/editar_produto.php?id=${id}&json=1`);
-            
-            // Verifica se a resposta é JSON válido
             const contentType = response.headers.get('content-type');
             if (!contentType || !contentType.includes('application/json')) {
                 const text = await response.text();
                 throw new Error(`Resposta não é JSON: ${text.substring(0, 100)}...`);
             }
-            
             const data = await response.json();
-
             if (data.error) {
                 alert('Erro: ' + data.error);
                 return;
             }
 
-            // ... (outros preenchimentos de campos) ...
+            // Campos básicos
+            document.getElementById('editar-id').value = data.id;
+            document.getElementById('editar-nome').value = data.nome || '';
+            document.getElementById('editar-preco').value = data.preco || '';
+            document.getElementById('editar-preco_original').value = data.preco_original || '';
+            document.getElementById('editar-desconto').value = data.desconto || '';
+            document.getElementById('editar-descricao').value = data.descricao || '';
+            document.getElementById('editar-tags').value = data.tags || '';
 
-            // Exibe as imagens atuais
+            // Categoria e Anime
+            if (data.categoria_id) document.getElementById('editar-categoria_id').value = data.categoria_id;
+            if (data.anime_id) document.getElementById('editar-anime_id').value = data.anime_id;
+
+            // Cores
+            if (Array.isArray(data.cores)) {
+                document.querySelectorAll('.editar-cor').forEach(chk => {
+                    chk.checked = data.cores.includes(chk.value);
+                });
+            }
+
+            // Estoque
+            if (data.estoque) {
+                Object.keys(data.estoque).forEach(tam => {
+                    const input = document.getElementById(`editar-estoque_${tam}`);
+                    if (input) input.value = data.estoque[tam];
+                });
+            }
+
+            // Imagens atuais
             const imagensContainer = document.getElementById('imagens-atuais-container');
             imagensContainer.innerHTML = '';
-            
             if (data.imagens && data.imagens.length > 0) {
                 data.imagens.forEach(imagem => {
-                    // Obtém o nome do arquivo e constrói o caminho completo
-                    const nomeImagem = imagem.caminho ? basename(imagem.caminho) : 
-                                      imagem.url_imagem ? basename(imagem.url_imagem) : '';
-                    
+                    const nomeImagem = imagem.caminho ? basename(imagem.caminho) : imagem.url_imagem ? basename(imagem.url_imagem) : '';
                     const imagePath = '/ds-main/admin/src/uploads/' + nomeImagem;
-                    
                     const imgDiv = document.createElement('div');
                     imgDiv.className = 'relative';
                     imgDiv.innerHTML = `
                         <div class="bg-white rounded-lg shadow-md overflow-hidden">
-                            <img src="${imagePath}" 
-                                 alt="Imagem do produto" 
-                                 class="w-full h-32 object-cover"
+                            <img src="${imagePath}" alt="Imagem do produto" class="w-full h-32 object-cover"
                                  onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200?text=Imagem+Não+Encontrada'">
                             <div class="absolute bottom-2 right-2 flex space-x-1">
                                 <button type="button" class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center excluir-imagem" data-imagem-id="${imagem.id}">
@@ -467,19 +466,16 @@ document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
                     `;
                     imagensContainer.appendChild(imgDiv);
                 });
-                
-                // Adiciona event listeners para os botões de excluir imagens
+
+                // Botão excluir imagens
                 document.querySelectorAll('.excluir-imagem').forEach(button => {
                     button.addEventListener('click', function() {
                         const imagemId = this.getAttribute('data-imagem-id');
-                        // Adiciona um campo hidden para marcar a imagem para exclusão
                         const input = document.createElement('input');
                         input.type = 'hidden';
                         input.name = 'excluir_imagens[]';
                         input.value = imagemId;
                         document.getElementById('form-editar').appendChild(input);
-                        
-                        // Remove a imagem da visualização
                         this.closest('.relative').remove();
                     });
                 });
@@ -491,10 +487,10 @@ document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
                     <p class="col-span-full text-gray-500 text-center">Nenhuma imagem encontrada para este produto.</p>
                 `;
             }
-            
+
             // Mostra modal
             document.getElementById('modal-editar').classList.remove('hidden');
-            
+
         } catch (error) {
             console.error('Erro ao carregar dados do produto:', error);
             alert('Erro ao carregar dados do produto: ' + error.message);
@@ -502,20 +498,17 @@ document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
     });
 });
 
-// Função auxiliar para extrair o nome do arquivo do caminho
+// Extrair nome do arquivo
 function basename(path) {
     return path.split('/').pop().split('\\').pop();
 }
 
-        // Ativar menu responsivo
-        document.querySelectorAll('.sidebar-link').forEach(link => {
-            if (link.href === window.location.href) {
-                link.classList.add('active');
-            }
-        });
+// Ativar menu responsivo
+document.querySelectorAll('.sidebar-link').forEach(link => {
+    if (link.href === window.location.href) link.classList.add('active');
+});
 
-
-
+        
     </script>
 </body>
 </html>

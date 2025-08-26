@@ -1,11 +1,11 @@
 <?php
-$host = 'localhost';     // Servidor MySQL (geralmente 'localhost')
-$dbname = 'FlammeIndex';  // Nome do banco que você criou
-$user = 'root';          // Usuário do MySQL (padrão é 'root')
-$pass = '';              // Senha do MySQL (vazia se não tiver)
+$host = 'localhost';
+$dbname = 'FlammeIndex';
+$username = 'root';    // Mudou de $user para $username
+$password = '';        // Mudou de $pass para $password
 
 try {
-    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $user, $pass);
+    $pdo = new PDO("mysql:host=$host;dbname=$dbname;charset=utf8", $username, $password);
     $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
 } catch (PDOException $e) {
     die("Erro ao conectar: " . $e->getMessage());

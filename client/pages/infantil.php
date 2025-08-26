@@ -231,19 +231,20 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
 
                 <!-- Right Icons -->
-                <div class="flex items-center space-x-6">
-                    <!-- <button class="text-white hover:text-red-500 transition-colors duration-200">
-                        <i class="fas fa-search text-xl"></i>
-                    </button> -->
-                    <button class="text-white hover:text-red-500 transition-colors duration-200">
-                        <i class="far fa-user text-xl"></i>
+<!-- Right Icons -->
+                 <div class="flex items-center space-x-6">
+                    <button onclick="window.location.href='usuario.php'" class="text-white hover:text-red-500 transition-colors duration-200">
+                    <i class="far fa-user text-xl"></i>
                     </button>
+                    
                     <button id="cart-button"
                         class="text-white hover:text-red-500 transition-colors duration-200 relative">
                         <i class="fas fa-shopping-bag text-xl"></i>
                         <span id="cart-count"
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
                     </button>
+
+
                 </div>
             </div>
         </div>

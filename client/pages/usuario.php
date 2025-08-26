@@ -108,7 +108,7 @@ $current_page = "usuario";
 </head>
 <body class="bg-gray-50">
     <!-- Navigation -->
-    <nav class="bg-black sticky top-0 z-50 shadow-md" id="navbar">
+   <nav class="bg-black sticky top-0 z-50 shadow-md" id="navbar">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <!-- Mobile menu button -->
@@ -125,23 +125,35 @@ $current_page = "usuario";
                     </a>
                 </div>
 
+
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-6">
-                    <a href="produtos.php" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Produtos</a>
-                    <a href="masculino.php" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Masculino</a>
-                    <a href="feminino.php" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminino</a>
-                    <a href="infantil.php" class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Infantil</a>
+                    <a href="produtos.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Produtos</a>
+                    <a href="masculino.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Masculino</a>
+                    <a href="feminino.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Feminino</a>
+                    <a href="infantil.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Infantil</a>
+                    <a href="ajuda.php"
+                        class="text-white hover:text-red-500 px-3 py-3 text-sm font-semibold transition-colors duration-200">Central de Ajuda</a>
                 </div>
 
                 <!-- Right Icons -->
-                <div class="flex items-center space-x-6">
-                    <a href="usuario.php" class="text-red-500 hover:text-red-500 transition-colors duration-200">
-                        <i class="far fa-user text-xl"></i>
-                    </a>
-                    <button id="cart-button" class="text-white hover:text-red-500 transition-colors duration-200 relative">
-                        <i class="fas fa-shopping-bag text-xl"></i>
-                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                 <div class="flex items-center space-x-6">
+                    <button onclick="window.location.href='usuario.php'" class="text-red-500 transition-colors duration-200">
+                    <i class="far fa-user text-xl"></i>
                     </button>
+                    
+                    <button id="cart-button"
+                        class="text-white hover:text-red-500 transition-colors duration-200 relative">
+                        <i class="fas fa-shopping-bag text-xl"></i>
+                        <span id="cart-count"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+                    </button>
+
+
                 </div>
             </div>
         </div>
@@ -153,7 +165,7 @@ $current_page = "usuario";
                 <a href="masculino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
                 <a href="feminino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
                 <a href="infantil.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
-                <a href="usuario.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Minha Conta</a>
+                <a href="ajuda.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Central de Ajuda</a>
             </div>
         </div>
     </nav>
@@ -167,7 +179,7 @@ $current_page = "usuario";
                     <div class="text-center mb-6">
                         <div class="avatar-upload inline-block relative">
                             <img src="<?php echo '../uploads/avatars/' . $usuario['avatar']; ?>" 
-                                 alt="Avatar" 
+                                  
                                  class="w-24 h-24 rounded-full object-cover mx-auto border-2 border-gray-200">
                             <div class="avatar-overlay">
                                 <i class="fas fa-camera text-white text-xl"></i>
@@ -190,7 +202,7 @@ $current_page = "usuario";
                         <a href="#seguranca" class="sidebar-link block px-4 py-3 rounded-lg font-medium" data-tab="seguranca">
                             <i class="fas fa-lock mr-3"></i>Segurança
                         </a>
-                        <a href="../actions/logout.php" class="sidebar-link block px-4 py-3 rounded-lg font-medium text-red-600">
+                        <a href="../../client/utils/logout.php" class="sidebar-link block px-4 py-3 rounded-lg font-medium text-red-600">
                             <i class="fas fa-sign-out-alt mr-3"></i>Sair
                         </a>
                     </nav>

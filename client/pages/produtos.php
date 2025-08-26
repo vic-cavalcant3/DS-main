@@ -11,9 +11,10 @@ $pagina = $_GET['pagina'] ?? 1;
 $itens_por_pagina = 12;
 $offset = ($pagina - 1) * $itens_por_pagina;
 
-// Construir query SQL com filtros - CORREÇÃO: Aspas faltando
+// CORREÇÃO: Query principal - garantir que cada produto apareça apenas uma vez
 $sql = "SELECT p.*, 
                c.nome as categoria_nome, 
+               c.slug as categoria_slug,
                a.nome as anime_nome,
                (SELECT url_imagem 
                 FROM imagens 
@@ -27,6 +28,7 @@ $sql = "SELECT p.*,
 
 $params = [];
 
+// Filtros
 if ($categoria) {
     $sql .= " AND c.slug = :categoria";
     $params['categoria'] = $categoria;
@@ -65,8 +67,8 @@ switch ($ordenar) {
         $sql .= " ORDER BY p.nome ASC";
 }
 
-// Contar total de produtos para paginação - CORREÇÃO: Query de contagem mais segura
-$count_sql = "SELECT COUNT(*) 
+// CORREÇÃO: Query de contagem - contar produtos únicos
+$count_sql = "SELECT COUNT(DISTINCT p.id) 
              FROM produtos p 
              LEFT JOIN categorias c ON p.categoria_id = c.id 
              LEFT JOIN animes a ON p.anime_id = a.id 
@@ -109,6 +111,17 @@ foreach ($params as $key => $value) {
 
 $stmt->execute();
 $produtos = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
+// DEBUG: Verificar se há duplicatas
+$produtos_ids = [];
+$produtos_unicos = [];
+foreach ($produtos as $produto) {
+    if (!in_array($produto['id'], $produtos_ids)) {
+        $produtos_ids[] = $produto['id'];
+        $produtos_unicos[] = $produto;
+    }
+}
+$produtos = $produtos_unicos;
 
 // Buscar categorias e animes para os filtros
 $categorias_stmt = $pdo->query("SELECT * FROM categorias WHERE ativo = 1 ORDER BY nome");
@@ -177,14 +190,35 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             from { opacity: 0; transform: translateY(10px); }
             to { opacity: 1; transform: translateY(0); }
         }
-        
-        .filter-badge {
-            animation: slideInFromTop 0.3s ease;
+
+        /* Mobile Filter Modal */
+        .mobile-filter-modal {
+            transform: translateY(100%);
+            transition: transform 0.3s ease-in-out;
         }
         
-        @keyframes slideInFromTop {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        .mobile-filter-modal.open {
+            transform: translateY(0);
+        }
+
+        @media (max-width: 1023px) {
+            .desktop-filters {
+                display: none;
+            }
+            
+            .mobile-filter-button {
+                display: block;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .desktop-filters {
+                display: block;
+            }
+            
+            .mobile-filter-button {
+                display: none;
+            }
         }
     </style>
 </head>
@@ -208,7 +242,6 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                     </a>
                 </div>
 
-
                 <!-- Desktop Menu -->
                 <div class="hidden md:flex space-x-6">
                     <a href="produtos.php"
@@ -224,13 +257,11 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                 </div>
 
                 <!-- Right Icons -->
-                <div class="flex items-center space-x-6">
-                    <!-- <button class="text-white hover:text-red-500 transition-colors duration-200">
-                        <i class="fas fa-search text-xl"></i>
-                    </button> -->
-                    <button class="text-white hover:text-red-500 transition-colors duration-200">
-                        <i class="far fa-user text-xl"></i>
+                 <div class="flex items-center space-x-6">
+                    <button onclick="window.location.href='usuario.php'" class="text-white hover:text-red-500 transition-colors duration-200">
+                    <i class="far fa-user text-xl"></i>
                     </button>
+                    
                     <button id="cart-button"
                         class="text-white hover:text-red-500 transition-colors duration-200 relative">
                         <i class="fas fa-shopping-bag text-xl"></i>
@@ -253,7 +284,6 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </nav>
 
-
     <!-- Page Header -->
     <div class="bg-black text-white py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -271,9 +301,25 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Main Content -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <!-- Mobile Filter Button -->
+        <div class="mobile-filter-button mb-6">
+            <button id="open-mobile-filters" class="w-full bg-white border border-gray-300 rounded-lg px-4 py-3 flex items-center justify-between text-gray-700 hover:bg-gray-50 transition-colors">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-filter text-red-500"></i>
+                    <span class="font-medium">Filtros</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <?php if ($categoria || $anime || $cor || $preco_max < 200): ?>
+                        <span class="bg-red-500 text-white text-xs px-2 py-1 rounded-full">Filtros ativos</span>
+                    <?php endif; ?>
+                    <i class="fas fa-chevron-down"></i>
+                </div>
+            </button>
+        </div>
+
         <div class="flex flex-col lg:flex-row gap-8">
-            <!-- Sidebar Filters -->
-            <aside class="lg:w-1/4">
+            <!-- Desktop Sidebar Filters -->
+            <aside class="desktop-filters lg:w-1/4">
                 <div class="bg-white rounded-lg shadow-md p-6 sticky top-24">
                     <form method="GET" action="produtos.php" id="filter-form">
                         <div class="flex items-center justify-between mb-6">
@@ -282,25 +328,6 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                                 Limpar Tudo
                             </a>
                         </div>
-
-                        <!-- Active Filters Display -->
-                        <?php if ($categoria || $anime || $cor || $preco_max < 200): ?>
-                        <div class="mb-6 space-y-2">
-                            <?php if ($categoria): ?>
-                            <div class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-700">
-                                Categoria: <?= htmlspecialchars(ucfirst($categoria)) ?>
-                                <a href="<?= http_build_query(array_merge($_GET, ['categoria' => ''])) ?>" class="ml-2 text-red-500 hover:text-red-700">×</a>
-                            </div>
-                            <?php endif; ?>
-                            
-                            <?php if ($anime): ?>
-                            <div class="filter-badge inline-flex items-center px-3 py-1 rounded-full text-sm bg-red-100 text-red-700">
-                                Anime: <?= htmlspecialchars(ucfirst(str_replace('-', ' ', $anime))) ?>
-                                <a href="?<?= http_build_query(array_merge($_GET, ['anime' => ''])) ?>" class="ml-2 text-red-500 hover:text-red-700">×</a>
-                            </div>
-                            <?php endif; ?>
-                        </div>
-                        <?php endif; ?>
 
                         <!-- Category Filter -->
                         <div class="mb-6 border-b border-gray-200 pb-4">
@@ -418,40 +445,40 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <?php foreach ($produtos as $produto): ?>
                     <div class="product-card bg-white rounded-lg overflow-hidden shadow-md fade-in">
                         <div class="relative group">
-    <?php 
-    // Construir caminho correto da imagem
-    $imagem_src = '';
-    if ($produto['imagem_principal']) {
-        // Se já contém o caminho completo admin/src/uploads/
-        if (strpos($produto['imagem_principal'], 'admin/src/uploads/') !== false) {
-            $imagem_src = '/ds-main/' . $produto['imagem_principal'];
-        } else {
-            // Se é apenas o nome do arquivo
-            $imagem_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_principal']);
-        }
-    } else {
-        $imagem_src = '/ds-main/client/src/no-image.png'; // imagem padrão
-    }
-    ?>
-    
-    <img src="<?= $imagem_src ?>" 
-         alt="<?= htmlspecialchars($produto['nome']) ?>" 
-         class="w-full h-80 object-cover"
-         onerror="this.src='/ds-main/client/src/no-image.png'">
-    
-    <?php if ($produto['imagem_hover']): ?>
-        <?php 
-        $imagem_hover_src = '';
-        if (strpos($produto['imagem_hover'], 'admin/src/uploads/') !== false) {
-            $imagem_hover_src = '/ds-main/' . $produto['imagem_hover'];
-        } else {
-            $imagem_hover_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_hover']);
-        }
-        ?>
-        <img src="<?= $imagem_hover_src ?>" 
-             alt="<?= htmlspecialchars($produto['nome']) ?> - Hover" 
-             class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-    <?php endif; ?>
+                            <?php 
+                            // Construir caminho correto da imagem
+                            $imagem_src = '';
+                            if ($produto['imagem_principal']) {
+                                // Se já contém o caminho completo admin/src/uploads/
+                                if (strpos($produto['imagem_principal'], 'admin/src/uploads/') !== false) {
+                                    $imagem_src = '/ds-main/' . $produto['imagem_principal'];
+                                } else {
+                                    // Se é apenas o nome do arquivo
+                                    $imagem_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_principal']);
+                                }
+                            } else {
+                                $imagem_src = '/ds-main/client/src/no-image.png'; // imagem padrão
+                            }
+                            ?>
+                            
+                            <img src="<?= $imagem_src ?>" 
+                                alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                                class="w-full h-80 object-cover"
+                                onerror="this.src='/ds-main/client/src/no-image.png'">
+                            
+                            <?php if ($produto['imagem_hover']): ?>
+                                <?php 
+                                $imagem_hover_src = '';
+                                if (strpos($produto['imagem_hover'], 'admin/src/uploads/') !== false) {
+                                    $imagem_hover_src = '/ds-main/' . $produto['imagem_hover'];
+                                } else {
+                                    $imagem_hover_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_hover']);
+                                }
+                                ?>
+                                <img src="<?= $imagem_hover_src ?>" 
+                                    alt="<?= htmlspecialchars($produto['nome']) ?> - Hover" 
+                                    class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                            <?php endif; ?>
                         </div>
                         
                         <div class="p-4">
@@ -536,7 +563,114 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
         </div>
     </div>
 
-   <!-- Shopping Cart Sidebar -->
+    <!-- Mobile Filter Modal -->
+    <div id="mobile-filter-modal" class="mobile-filter-modal fixed inset-x-0 bottom-0 bg-white z-50 rounded-t-2xl shadow-2xl max-h-[85vh] overflow-y-auto">
+        <div class="p-6">
+            <!-- Modal Header -->
+            <div class="flex items-center justify-between mb-6 border-b border-gray-200 pb-4">
+                <h2 class="text-xl font-bold text-gray-900">Filtros</h2>
+                <div class="flex items-center space-x-4">
+                    <a href="produtos.php" class="text-red-500 text-sm hover:text-red-600 font-medium">
+                        Limpar Tudo
+                    </a>
+                    <button id="close-mobile-filters" class="text-gray-500 hover:text-gray-700">
+                        <i class="fas fa-times text-xl"></i>
+                    </button>
+                </div>
+            </div>
+
+            <form method="GET" action="produtos.php" id="mobile-filter-form">
+                <!-- Category Filter -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">Categoria</h3>
+                    <div class="grid grid-cols-2 gap-3">
+                        <?php foreach ($categorias as $cat): ?>
+                        <label class="flex items-center p-3 border rounded-lg cursor-pointer hover:bg-gray-50 <?= $categoria === $cat['slug'] ? 'border-red-500 bg-red-50' : 'border-gray-200' ?>">
+                            <input type="radio" name="categoria" value="<?= $cat['slug'] ?>" 
+                                   <?= $categoria === $cat['slug'] ? 'checked' : '' ?>
+                                   class="form-radio h-4 w-4 text-red-500 border-gray-300 mr-3">
+                            <span class="text-sm font-medium text-gray-700"><?= htmlspecialchars($cat['nome']) ?></span>
+                        </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Anime Filter -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">Anime</h3>
+                    <div class="space-y-2 max-h-32 overflow-y-auto">
+                        <?php foreach ($animes as $a): ?>
+                        <label class="flex items-center p-2 rounded hover:bg-gray-50">
+                            <input type="radio" name="anime" value="<?= $a['slug'] ?>" 
+                                   <?= $anime === $a['slug'] ? 'checked' : '' ?>
+                                   class="form-radio h-4 w-4 text-red-500 border-gray-300 mr-3">
+                            <span class="text-sm text-gray-700"><?= htmlspecialchars($a['nome']) ?></span>
+                        </label>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+
+                <!-- Price Range -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">Preço</h3>
+                    <div class="space-y-3">
+                        <input type="range" name="preco_max" min="30" max="200" value="<?= $preco_max ?>" 
+                               class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer" 
+                               id="mobile-price-range" onchange="updateMobilePriceDisplay(this.value)">
+                        <div class="flex justify-between text-sm text-gray-600">
+                            <span>R$30</span>
+                            <span id="mobile-price-value" class="font-medium text-red-500">até R$<?= $preco_max ?></span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Color Filter -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">Cor</h3>
+                    <div class="flex space-x-4">
+                        <button type="button" class="mobile-color-btn w-12 h-12 rounded-full bg-black border-4 <?= $cor === 'preto' ? 'border-red-500' : 'border-gray-300' ?> hover:border-red-500 transition-all flex items-center justify-center" 
+                                data-color="preto" title="Preto">
+                            <?= $cor === 'preto' ? '<i class="fas fa-check text-white text-xs"></i>' : '' ?>
+                        </button>
+                        <button type="button" class="mobile-color-btn w-12 h-12 rounded-full bg-white border-4 <?= $cor === 'branco' ? 'border-red-500' : 'border-gray-300' ?> hover:border-red-500 transition-all flex items-center justify-center" 
+                                data-color="branco" title="Branco">
+                            <?= $cor === 'branco' ? '<i class="fas fa-check text-red-500 text-xs"></i>' : '' ?>
+                        </button>
+                        <button type="button" class="mobile-color-btn w-12 h-12 rounded-full bg-gray-500 border-4 <?= $cor === 'cinza' ? 'border-red-500' : 'border-gray-300' ?> hover:border-red-500 transition-all flex items-center justify-center" 
+                                data-color="cinza" title="Cinza">
+                            <?= $cor === 'cinza' ? '<i class="fas fa-check text-white text-xs"></i>' : '' ?>
+                        </button>
+                        <button type="button" class="mobile-color-btn w-12 h-12 rounded-full bg-red-500 border-4 <?= $cor === 'vermelho' ? 'border-red-500' : 'border-gray-300' ?> hover:border-red-500 transition-all flex items-center justify-center" 
+                                data-color="vermelho" title="Vermelho">
+                            <?= $cor === 'vermelho' ? '<i class="fas fa-check text-white text-xs"></i>' : '' ?>
+                        </button>
+                    </div>
+                    <input type="hidden" name="cor" value="<?= $cor ?>" id="mobile-color-input">
+                </div>
+
+                <!-- Sort -->
+                <div class="mb-6">
+                    <h3 class="font-semibold text-gray-900 mb-3">Ordenar por</h3>
+                    <select name="ordenar" class="w-full border border-gray-300 rounded-lg px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-red-500 focus:border-red-500">
+                        <option value="nome" <?= $ordenar === 'nome' ? 'selected' : '' ?>>Nome A-Z</option>
+                        <option value="preco_asc" <?= $ordenar === 'preco_asc' ? 'selected' : '' ?>>Menor Preço</option>
+                        <option value="preco_desc" <?= $ordenar === 'preco_desc' ? 'selected' : '' ?>>Maior Preço</option>
+                        <option value="mais_novos" <?= $ordenar === 'mais_novos' ? 'selected' : '' ?>>Mais Recentes</option>
+                        <option value="populares" <?= $ordenar === 'populares' ? 'selected' : '' ?>>Mais Populares</option>
+                    </select>
+                </div>
+
+                <!-- Apply Filters Button -->
+                <div class="sticky bottom-0 bg-white pt-4 border-t border-gray-200">
+                    <button type="submit" class="w-full bg-red-600 text-white py-4 rounded-lg font-semibold hover:bg-red-700 transition-colors">
+                        Aplicar Filtros
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Shopping Cart Sidebar -->
     <div id="cart-sidebar" class="fixed inset-y-0 right-0 w-full md:w-96 bg-white shadow-xl transform translate-x-full transition-transform duration-300 ease-in-out z-50 overflow-y-auto">
         <div class="p-6">
             <div class="flex justify-between items-center mb-6">
@@ -561,50 +695,50 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
     </div>
 
     <!-- Footer -->
-<footer class="bg-black text-white pt-12 pb-6">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
-            <div>
-                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">FLAMMA</h3>
-                <p class="text-gray-400 text-sm">Camisetas premium de anime para verdadeiros fãs.</p>
-            </div>
+    <footer class="bg-black text-white pt-12 pb-6">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 mb-8">
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">FLAMMA</h3>
+                    <p class="text-gray-400 text-sm">Camisetas premium de anime para verdadeiros fãs.</p>
+                </div>
 
-            <div>
-                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">PRODUTOS</h3>
-                <ul class="space-y-2">
-                    <li><a href="masculino.php" class="text-gray-400 hover:text-red-500 text-sm">Masculino</a></li>
-                    <li><a href="feminino.php" class="text-gray-400 hover:text-red-500 text-sm">Feminino</a></li>
-                    <li><a href="infantil.php" class="text-gray-400 hover:text-red-500 text-sm">Infantil</a></li>
-                    <li><a href="produtos.php" class="text-gray-400 hover:text-red-500 text-sm">Todos os Produtos</a></li>
-                </ul>
-            </div>
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">PRODUTOS</h3>
+                    <ul class="space-y-2">
+                        <li><a href="masculino.php" class="text-gray-400 hover:text-red-500 text-sm">Masculino</a></li>
+                        <li><a href="feminino.php" class="text-gray-400 hover:text-red-500 text-sm">Feminino</a></li>
+                        <li><a href="infantil.php" class="text-gray-400 hover:text-red-500 text-sm">Infantil</a></li>
+                        <li><a href="produtos.php" class="text-gray-400 hover:text-red-500 text-sm">Todos os Produtos</a></li>
+                    </ul>
+                </div>
 
-            <div>
-                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">SUPORTE</h3>
-                <ul class="space-y-2">
-                    <li><a href="ajuda.php" class="text-gray-400 hover:text-red-500 text-sm">Central de Ajuda</a></li>
-                    <li><a href="ajuda.php#exchanges" class="text-gray-400 hover:text-red-500 text-sm">Trocas e Devoluções</a></li>
-                    <li><a href="ajuda.php#delivery" class="text-gray-400 hover:text-red-500 text-sm">Entregas</a></li>
-                    <li><a href="contato.php" class="text-gray-400 hover:text-red-500 text-sm">Fale Conosco</a></li>
-                </ul>
-            </div>
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">SUPORTE</h3>
+                    <ul class="space-y-2">
+                        <li><a href="ajuda.php" class="text-gray-400 hover:text-red-500 text-sm">Central de Ajuda</a></li>
+                        <li><a href="ajuda.php#exchanges" class="text-gray-400 hover:text-red-500 text-sm">Trocas e Devoluções</a></li>
+                        <li><a href="ajuda.php#delivery" class="text-gray-400 hover:text-red-500 text-sm">Entregas</a></li>
+                        <li><a href="contato.php" class="text-gray-400 hover:text-red-500 text-sm">Fale Conosco</a></li>
+                    </ul>
+                </div>
 
-            <div>
-                <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">REDES SOCIAIS</h3>
-                <div class="flex space-x-4">
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-instagram text-lg"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-twitter text-lg"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-facebook-f text-lg"></i></a>
-                    <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-tiktok text-lg"></i></a>
+                <div>
+                    <h3 class="text-sm font-semibold uppercase tracking-wider mb-4">REDES SOCIAIS</h3>
+                    <div class="flex space-x-4">
+                        <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-instagram text-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-twitter text-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-facebook-f text-lg"></i></a>
+                        <a href="#" class="text-gray-400 hover:text-red-500"><i class="fab fa-tiktok text-lg"></i></a>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="border-t border-gray-800 pt-6 text-center">
-            <p class="text-gray-400 text-sm">© 2025 Flamma. Todos os direitos reservados.</p>
+            <div class="border-t border-gray-800 pt-6 text-center">
+                <p class="text-gray-400 text-sm">© 2025 Flamma. Todos os direitos reservados.</p>
+            </div>
         </div>
-    </div>
-</footer>
+    </footer>
 
     <script>
         // Mobile menu toggle
@@ -612,7 +746,30 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             document.getElementById('mobile-menu').classList.toggle('hidden');
         });
 
-        // Filter dropdown toggles
+        // Mobile filter modal
+        const openMobileFilters = document.getElementById('open-mobile-filters');
+        const closeMobileFilters = document.getElementById('close-mobile-filters');
+        const mobileFilterModal = document.getElementById('mobile-filter-modal');
+
+        openMobileFilters.addEventListener('click', () => {
+            mobileFilterModal.classList.add('open');
+            document.body.style.overflow = 'hidden';
+        });
+
+        closeMobileFilters.addEventListener('click', () => {
+            mobileFilterModal.classList.remove('open');
+            document.body.style.overflow = 'auto';
+        });
+
+        // Close modal when clicking outside
+        mobileFilterModal.addEventListener('click', (e) => {
+            if (e.target === mobileFilterModal) {
+                mobileFilterModal.classList.remove('open');
+                document.body.style.overflow = 'auto';
+            }
+        });
+
+        // Filter dropdown toggles (desktop)
         document.querySelectorAll('.filter-toggle').forEach(button => {
             button.addEventListener('click', function() {
                 const target = document.getElementById(this.dataset.target);
@@ -622,18 +779,52 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             });
         });
 
-        // Price range display
+        // Price range display (desktop)
         function updatePriceDisplay(value) {
-            document.getElementById('price-value').textContent = 'até R$' + value;
+            document.getElementById('price-value').textContent = 'até R
+     + value;
             document.getElementById('filter-form').submit();
         }
 
-        // Color filter buttons
+        // Price range display (mobile)
+        function updateMobilePriceDisplay(value) {
+            document.getElementById('mobile-price-value').textContent = 'até R
+     + value;
+        }
+
+        // Color filter buttons (desktop)
         document.querySelectorAll('.color-filter-btn').forEach(button => {
             button.addEventListener('click', function() {
                 const color = this.dataset.color;
                 document.getElementById('color-input').value = color;
                 document.getElementById('filter-form').submit();
+            });
+        });
+
+        // Color filter buttons (mobile)
+        document.querySelectorAll('.mobile-color-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const color = this.dataset.color;
+                
+                // Reset all buttons
+                document.querySelectorAll('.mobile-color-btn').forEach(btn => {
+                    btn.classList.remove('border-red-500');
+                    btn.classList.add('border-gray-300');
+                    btn.innerHTML = '';
+                });
+                
+                // Activate selected button
+                this.classList.remove('border-gray-300');
+                this.classList.add('border-red-500');
+                
+                // Add check icon based on color
+                if (color === 'preto' || color === 'cinza' || color === 'vermelho') {
+                    this.innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+                } else {
+                    this.innerHTML = '<i class="fas fa-check text-red-500 text-xs"></i>';
+                }
+                
+                document.getElementById('mobile-color-input').value = color;
             });
         });
 
@@ -660,10 +851,10 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                     const cartItem = document.createElement('div');
                     cartItem.className = 'flex items-center space-x-4 border-b border-gray-200 pb-4';
                     cartItem.innerHTML = `
-                                              <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
                         <div class="flex-1">
                             <h4 class="text-gray-900 font-medium">${item.name}</h4>
-                            <p class="text-gray-500 text-sm">R$${item.price.toFixed(2)}</p>
+                            <p class="text-gray-500 text-sm">R${item.price.toFixed(2)}</p>
                             <div class="flex items-center mt-2 space-x-2">
                                 <button class="decrease-qty bg-gray-200 px-2 py-1 rounded text-sm" data-index="${index}">-</button>
                                 <span class="text-gray-700">${item.quantity}</span>
@@ -678,7 +869,7 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                 });
             }
 
-            cartTotal.textContent = `R$${total.toFixed(2)}`;
+            cartTotal.textContent = `R${total.toFixed(2)}`;
             cartCount.textContent = cart.reduce((acc, item) => acc + item.quantity, 0);
             localStorage.setItem('cart', JSON.stringify(cart));
 
@@ -735,7 +926,7 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                 }
 
                 updateCartDisplay();
-                cartSidebar.classList.remove('translate-x-full'); // open cart on add
+                cartSidebar.classList.remove('translate-x-full');
             });
         });
 
