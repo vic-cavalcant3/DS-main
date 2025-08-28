@@ -1,0 +1,37 @@
+# .htaccess - Coloque este arquivo na raiz do seu projeto
+
+RewriteEngine On
+
+# Rota amigável para produtos individuais
+# /produto/12 -> produto.php?id=12
+RewriteRule ^produto/([0-9]+)/?$ produto.php?id=$1 [L,QSA]
+
+# Rota amigável para produtos por categoria
+# /categoria/masculino -> client/pages/masculino.php
+RewriteRule ^categoria/([a-zA-Z]+)/?$ client/pages/$1.php [L,QSA]
+
+# Rota para busca de produtos
+# /busca/naruto -> client/pages/produtos.php?search=naruto
+RewriteRule ^busca/([^/]+)/?$ client/pages/produtos.php?search=$1 [L,QSA]
+
+# Bloquear acesso direto a arquivos sensíveis
+<Files "conexao.php">
+    Require all denied
+</Files>
+
+<Files "config.php">
+    Require all denied
+</Files>
+
+# Cache de imagens
+<IfModule mod_expires.c>
+    ExpiresActive On
+    ExpiresByType image/jpg "access plus 1 month"
+    ExpiresByType image/jpeg "access plus 1 month"
+    ExpiresByType image/gif "access plus 1 month"
+    ExpiresByType image/png "access plus 1 month"
+    ExpiresByType text/css "access plus 1 month"
+    ExpiresByType application/pdf "access plus 1 month"
+    ExpiresByType text/javascript "access plus 1 month"
+    ExpiresByType application/javascript "access plus 1 month"
+</IfModule>
