@@ -236,11 +236,12 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-20 items-center">
                 <!-- Mobile menu button -->
-                <div class="flex items-center md:hidden">
+               <div class="flex items-center md:hidden">
                     <button id="mobile-menu-button" class="text-white hover:text-red-500">
                         <i class="fas fa-bars text-xl"></i>
                     </button>
                 </div>
+
 
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center justify-center">
@@ -279,14 +280,14 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
 
-        <!-- Mobile Menu -->
+
         <div id="mobile-menu" class="hidden md:hidden bg-black border-t border-gray-800">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="produtos.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Produtos</a>
-                <a href="masculino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
-                <a href="feminino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
-                <a href="infantil.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
-                <a href="ajuda.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Central de Ajuda</a>
+                <a href="client/pages/produtos.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Produtos</a>
+                <a href="client/pages/masculino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
+                <a href="client/pages/feminino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
+                <a href="client/pages/infantil.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
+                <a href="client/pages/ajuda.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Central de Ajuda</a>
             </div>
         </div>
     </nav>
@@ -767,199 +768,296 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </footer>
+ <script>
 
-    <script>
-        // Mobile menu toggle
-        document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
-        });
+// Mobile menu toggle - com verificação se existe
+const mobileMenuButton = document.getElementById('mobile-menu-button');
+if (mobileMenuButton) {
+    mobileMenuButton.addEventListener('click', function() {
+        const mobileMenu = document.getElementById('mobile-menu');
+        if (mobileMenu) {
+            mobileMenu.classList.toggle('hidden');
+        }
+    });
+}
 
-        // Mobile filter modal
-        const openMobileFilters = document.getElementById('open-mobile-filters');
-        const closeMobileFilters = document.getElementById('close-mobile-filters');
-        const mobileFilterModal = document.getElementById('mobile-filter-modal');
+// Mobile filter modal - com verificação se existem os elementos
+const openMobileFilters = document.getElementById('open-mobile-filters');
+const closeMobileFilters = document.getElementById('close-mobile-filters');
+const mobileFilterModal = document.getElementById('mobile-filter-modal');
 
-        openMobileFilters.addEventListener('click', () => {
-            mobileFilterModal.classList.add('open');
-            document.body.style.overflow = 'hidden';
-        });
+if (openMobileFilters && closeMobileFilters && mobileFilterModal) {
+    openMobileFilters.addEventListener('click', () => {
+        mobileFilterModal.classList.add('open');
+        document.body.style.overflow = 'hidden';
+    });
 
-        closeMobileFilters.addEventListener('click', () => {
+    closeMobileFilters.addEventListener('click', () => {
+        mobileFilterModal.classList.remove('open');
+        document.body.style.overflow = 'auto';
+    });
+
+    // Close modal when clicking outside
+    mobileFilterModal.addEventListener('click', (e) => {
+        if (e.target === mobileFilterModal) {
             mobileFilterModal.classList.remove('open');
             document.body.style.overflow = 'auto';
-        });
+        }
+    });
+}
 
-        // Close modal when clicking outside
-        mobileFilterModal.addEventListener('click', (e) => {
-            if (e.target === mobileFilterModal) {
-                mobileFilterModal.classList.remove('open');
-                document.body.style.overflow = 'auto';
-            }
-        });
-
-        // Filter dropdown toggles (desktop)
-        document.querySelectorAll('.filter-toggle').forEach(button => {
-            button.addEventListener('click', function() {
-                const target = document.getElementById(this.dataset.target);
-                target.classList.toggle('open');
-                const icon = this.querySelector('i');
+// Filter dropdown toggles (desktop) - com verificação
+document.querySelectorAll('.filter-toggle').forEach(button => {
+    button.addEventListener('click', function() {
+        const targetId = this.dataset.target;
+        const target = document.getElementById(targetId);
+        if (target) {
+            target.classList.toggle('open');
+            const icon = this.querySelector('i');
+            if (icon) {
                 icon.classList.toggle('rotate-180');
-            });
-        });
-
-        // Price range display (desktop)
-        function updatePriceDisplay(value) {
-            document.getElementById('price-value').textContent = 'até R
-     + value;
-            document.getElementById('filter-form').submit();
-        }
-
-        // Price range display (mobile)
-        function updateMobilePriceDisplay(value) {
-            document.getElementById('mobile-price-value').textContent = 'até R
-     + value;
-        }
-
-        // Color filter buttons (desktop)
-        document.querySelectorAll('.color-filter-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const color = this.dataset.color;
-                document.getElementById('color-input').value = color;
-                document.getElementById('filter-form').submit();
-            });
-        });
-
-        // Color filter buttons (mobile)
-        document.querySelectorAll('.mobile-color-btn').forEach(button => {
-            button.addEventListener('click', function() {
-                const color = this.dataset.color;
-                
-                // Reset all buttons
-                document.querySelectorAll('.mobile-color-btn').forEach(btn => {
-                    btn.classList.remove('border-red-500');
-                    btn.classList.add('border-gray-300');
-                    btn.innerHTML = '';
-                });
-                
-                // Activate selected button
-                this.classList.remove('border-gray-300');
-                this.classList.add('border-red-500');
-                
-                // Add check icon based on color
-                if (color === 'preto' || color === 'cinza' || color === 'vermelho') {
-                    this.innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
-                } else {
-                    this.innerHTML = '<i class="fas fa-check text-red-500 text-xs"></i>';
-                }
-                
-                document.getElementById('mobile-color-input').value = color;
-            });
-        });
-
-        // Cart functionality
-        const cartButton = document.getElementById('cart-button');
-        const closeCart = document.getElementById('close-cart');
-        const cartSidebar = document.getElementById('cart-sidebar');
-        const cartItems = document.getElementById('cart-items');
-        const cartTotal = document.getElementById('cart-total');
-        const cartCount = document.getElementById('cart-count');
-        
-        let cart = JSON.parse(localStorage.getItem('cart')) || [];
-        
-        function updateCartDisplay() {
-            cartItems.innerHTML = '';
-            let total = 0;
-            
-            if (cart.length === 0) {
-                cartItems.innerHTML = '<p class="text-gray-500 text-center py-8">Seu carrinho está vazio</p>';
-            } else {
-                cart.forEach((item, index) => {
-                    total += item.price * item.quantity;
-                    
-                    const cartItem = document.createElement('div');
-                    cartItem.className = 'flex items-center space-x-4 border-b border-gray-200 pb-4';
-                    cartItem.innerHTML = `
-                        <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
-                        <div class="flex-1">
-                            <h4 class="text-gray-900 font-medium">${item.name}</h4>
-                            <p class="text-gray-500 text-sm">R${item.price.toFixed(2)}</p>
-                            <div class="flex items-center mt-2 space-x-2">
-                                <button class="decrease-qty bg-gray-200 px-2 py-1 rounded text-sm" data-index="${index}">-</button>
-                                <span class="text-gray-700">${item.quantity}</span>
-                                <button class="increase-qty bg-gray-200 px-2 py-1 rounded text-sm" data-index="${index}">+</button>
-                            </div>
-                        </div>
-                        <button class="remove-item text-red-500 hover:text-red-700" data-index="${index}">
-                            <i class="fas fa-trash-alt"></i>
-                        </button>
-                    `;
-                    cartItems.appendChild(cartItem);
-                });
             }
+        }
+    });
+});
 
-            cartTotal.textContent = `R${total.toFixed(2)}`;
-            cartCount.textContent = cart.reduce((acc, item) => acc + item.quantity, 0);
-            localStorage.setItem('cart', JSON.stringify(cart));
+// Price range display (desktop) - CORRIGIDA A SINTAXE
+function updatePriceDisplay(value) {
+    const priceValue = document.getElementById('price-value');
+    const filterForm = document.getElementById('filter-form');
+    
+    if (priceValue) {
+        priceValue.textContent = 'até R$' + value;
+    }
+    if (filterForm) {
+        filterForm.submit();
+    }
+}
 
-            // Attach events to new buttons
-            document.querySelectorAll('.increase-qty').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const idx = this.dataset.index;
-                    cart[idx].quantity++;
-                    updateCartDisplay();
-                });
-            });
+// Price range display (mobile) - CORRIGIDA A SINTAXE
+function updateMobilePriceDisplay(value) {
+    const mobilePriceValue = document.getElementById('mobile-price-value');
+    if (mobilePriceValue) {
+        mobilePriceValue.textContent = 'até R$' + value;
+    }
+}
 
-            document.querySelectorAll('.decrease-qty').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const idx = this.dataset.index;
-                    if (cart[idx].quantity > 1) {
-                        cart[idx].quantity--;
-                        updateCartDisplay();
-                    }
-                });
-            });
+// Color filter buttons (desktop) - com verificação
+document.querySelectorAll('.color-filter-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const color = this.dataset.color;
+        const colorInput = document.getElementById('color-input');
+        const filterForm = document.getElementById('filter-form');
+        
+        if (colorInput) {
+            colorInput.value = color;
+        }
+        if (filterForm) {
+            filterForm.submit();
+        }
+    });
+});
 
-            document.querySelectorAll('.remove-item').forEach(btn => {
-                btn.addEventListener('click', function() {
-                    const idx = this.dataset.index;
-                    cart.splice(idx, 1);
-                    updateCartDisplay();
-                });
-            });
+// Color filter buttons (mobile) - com verificação
+document.querySelectorAll('.mobile-color-btn').forEach(button => {
+    button.addEventListener('click', function() {
+        const color = this.dataset.color;
+        
+        // Reset all buttons
+        document.querySelectorAll('.mobile-color-btn').forEach(btn => {
+            btn.classList.remove('border-red-500');
+            btn.classList.add('border-gray-300');
+            btn.innerHTML = '';
+        });
+        
+        // Activate selected button
+        this.classList.remove('border-gray-300');
+        this.classList.add('border-red-500');
+        
+        // Add check icon based on color
+        if (color === 'preto' || color === 'cinza' || color === 'vermelho') {
+            this.innerHTML = '<i class="fas fa-check text-white text-xs"></i>';
+        } else {
+            this.innerHTML = '<i class="fas fa-check text-red-500 text-xs"></i>';
+        }
+        
+        const mobileColorInput = document.getElementById('mobile-color-input');
+        if (mobileColorInput) {
+            mobileColorInput.value = color;
+        }
+    });
+});
+
+// Cart functionality - USANDO MEMÓRIA EM VEZ DE LOCALSTORAGE
+const cartButton = document.getElementById('cart-button');
+const closeCart = document.getElementById('close-cart');
+const cartSidebar = document.getElementById('cart-sidebar');
+const cartItems = document.getElementById('cart-items');
+const cartTotal = document.getElementById('cart-total');
+const cartCount = document.getElementById('cart-count');
+
+// Usar variáveis em memória em vez de localStorage
+let cart = [];
+
+function updateCartDisplay() {
+    if (!cartItems || !cartTotal || !cartCount) return;
+    
+    cartItems.innerHTML = '';
+    let total = 0;
+    
+    if (cart.length === 0) {
+        cartItems.innerHTML = '<p class="text-gray-500 text-center py-8">Seu carrinho está vazio</p>';
+    } else {
+        cart.forEach((item, index) => {
+            total += item.price * item.quantity;
+            
+            const cartItem = document.createElement('div');
+            cartItem.className = 'flex items-center space-x-4 border-b border-gray-200 pb-4';
+            cartItem.innerHTML = `
+                <img src="${item.image}" alt="${item.name}" class="w-16 h-16 object-cover rounded">
+                <div class="flex-1">
+                    <h4 class="text-gray-900 font-medium">${item.name}</h4>
+                    <p class="text-gray-500 text-sm">R$${item.price.toFixed(2)}</p>
+                    <div class="flex items-center mt-2 space-x-2">
+                        <button class="decrease-qty bg-gray-200 px-2 py-1 rounded text-sm" data-index="${index}">-</button>
+                        <span class="text-gray-700">${item.quantity}</span>
+                        <button class="increase-qty bg-gray-200 px-2 py-1 rounded text-sm" data-index="${index}">+</button>
+                    </div>
+                </div>
+                <button class="remove-item text-red-500 hover:text-red-700" data-index="${index}">
+                    <i class="fas fa-trash-alt"></i>
+                </button>
+            `;
+            cartItems.appendChild(cartItem);
+        });
+    }
+
+    cartTotal.textContent = `R$${total.toFixed(2).replace('.', ',')}`;
+    cartCount.textContent = cart.reduce((acc, item) => acc + item.quantity, 0);
+
+    // Attach events to new buttons
+    document.querySelectorAll('.increase-qty').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = this.dataset.index;
+            cart[idx].quantity++;
+            updateCartDisplay();
+        });
+    });
+
+    document.querySelectorAll('.decrease-qty').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = this.dataset.index;
+            if (cart[idx].quantity > 1) {
+                cart[idx].quantity--;
+            } else {
+                cart.splice(idx, 1);
+            }
+            updateCartDisplay();
+        });
+    });
+
+    document.querySelectorAll('.remove-item').forEach(btn => {
+        btn.addEventListener('click', function() {
+            const idx = this.dataset.index;
+            cart.splice(idx, 1);
+            updateCartDisplay();
+        });
+    });
+}
+
+// Show/hide cart sidebar - com verificação
+if (cartButton && closeCart && cartSidebar) {
+    cartButton.addEventListener('click', () => {
+        cartSidebar.classList.remove('translate-x-full');
+    });
+
+    closeCart.addEventListener('click', () => {
+        cartSidebar.classList.add('translate-x-full');
+    });
+}
+
+// Add to cart buttons - com verificação
+document.querySelectorAll('.add-to-cart').forEach(button => {
+    button.addEventListener('click', () => {
+        const id = button.dataset.id;
+        const name = button.dataset.name;
+        const price = parseFloat(button.dataset.price);
+        const image = button.dataset.image || '/ds-main/client/src/no-image.png';
+
+        const existing = cart.find(item => item.id == id);
+        if (existing) {
+            existing.quantity++;
+        } else {
+            cart.push({ id, name, price, image, quantity: 1 });
         }
 
-        // Show/hide cart sidebar
-        cartButton.addEventListener('click', () => {
-            cartSidebar.classList.remove('translate-x-full');
-        });
-
-        closeCart.addEventListener('click', () => {
-            cartSidebar.classList.add('translate-x-full');
-        });
-
-        // Add to cart buttons
-        document.querySelectorAll('.add-to-cart').forEach(button => {
-            button.addEventListener('click', () => {
-                const id = button.dataset.id;
-                const name = button.dataset.name;
-                const price = parseFloat(button.dataset.price);
-                const image = button.dataset.image || '/ds-main/client/src/no-image.png';
-
-                const existing = cart.find(item => item.id == id);
-                if (existing) {
-                    existing.quantity++;
-                } else {
-                    cart.push({ id, name, price, image, quantity: 1 });
-                }
-
-                updateCartDisplay();
-                cartSidebar.classList.remove('translate-x-full');
-            });
-        });
-
-        // Initialize cart display
         updateCartDisplay();
+        if (cartSidebar) {
+            cartSidebar.classList.remove('translate-x-full');
+        }
+    });
+});
+
+// Initialize cart display
+updateCartDisplay();
+
+// Fechar carrinho ao clicar fora (opcional) - com verificação
+if (cartSidebar && cartButton) {
+    document.addEventListener('click', function(e) {
+        if (!cartSidebar.contains(e.target) && !cartButton.contains(e.target)) {
+            cartSidebar.classList.add('translate-x-full');
+        }
+    });
+}
+
+// Função para trocar imagens ao selecionar uma cor (se existir)
+document.querySelectorAll('.color-option').forEach(colorOption => {
+    colorOption.addEventListener('click', function() {
+        const productCard = this.closest('.product-card');
+        if (!productCard) return;
+        
+        const productId = productCard.dataset.produtoId;
+        const selectedColor = this.dataset.color;
+        
+        // Remover a seleção anterior
+        productCard.querySelectorAll('.color-option').forEach(option => {
+            option.classList.remove('selected');
+        });
+        
+        // Adicionar seleção à cor clicada
+        this.classList.add('selected');
+        
+        // Obter as imagens para esta cor
+        const imagesDataElement = productCard.querySelector('.product-images-data');
+        if (imagesDataElement) {
+            const imagesData = JSON.parse(imagesDataElement.textContent);
+            
+            if (imagesData[selectedColor] && imagesData[selectedColor].length > 0) {
+                const productImage = productCard.querySelector('.product-image');
+                const productImageHover = productCard.querySelector('.product-image-hover');
+                
+                // Adicionar classe de transição
+                if (productImage) {
+                    productImage.classList.add('changing');
+                }
+                
+                // Trocar a imagem principal após um breve delay para a animação
+                setTimeout(() => {
+                    if (productImage) {
+                        productImage.src = imagesData[selectedColor][0];
+                        productImage.classList.remove('changing');
+                    }
+                    
+                    // Se houver imagem hover, tentar encontrar uma correspondente
+                    if (productImageHover && imagesData[selectedColor].length > 1) {
+                        productImageHover.src = imagesData[selectedColor][1];
+                    }
+                }, 150);
+            }
+        }
+    });
+});
     </script>
+   
 </body>
 </html>

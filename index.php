@@ -511,7 +511,7 @@ $categorias = $categorias_stmt->fetchAll(PDO::FETCH_ASSOC);
     <script>
         // Mobile menu toggle
         document.getElementById('mobile-menu-button').addEventListener('click', function() {
-            document.getElementById('mobile-menu').classList.toggle('hidden');
+        document.getElementById('mobile-menu').classList.toggle('hidden');
         });
 
         // Cart functionality
