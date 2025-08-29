@@ -64,26 +64,22 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         // Processa exclusão de imagens
         if (!empty($_POST['excluir_imagens'])) {
-            foreach ($_POST['excluir_imagens'] as $imagemId) {
-                // Primeiro obtém o caminho da imagem para excluir o arquivo
-                $sqlImg = "SELECT url_imagem FROM imagens WHERE id = ?";
-                $stmtImg = $pdo->prepare($sqlImg);
-                $stmtImg->execute([$imagemId]);
-                $imagem = $stmtImg->fetch();
-                
-                if ($imagem) {
-                    $filePath = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/' . $imagem['url_imagem'];
-                    if (file_exists($filePath)) {
-                        unlink($filePath);
-                    }
-                }
-                
-                // Exclui o registro do banco
-                $sqlDelete = "DELETE FROM imagens WHERE id = ?";
-                $stmtDelete = $pdo->prepare($sqlDelete);
-                $stmtDelete->execute([$imagemId]);
-            }
+    foreach ($_POST['excluir_imagens'] as $idImagem) {
+        // Busca a URL da imagem pra deletar o arquivo do servidor
+        $stmt = $pdo->prepare("SELECT url_imagem FROM imagens WHERE id = ?");
+        $stmt->execute([$idImagem]);
+        $img = $stmt->fetch(PDO::FETCH_ASSOC);
+
+        if ($img && file_exists(__DIR__ . "/../uploads/" . $img['url_imagem'])) {
+            unlink(__DIR__ . "/../uploads/" . $img['url_imagem']);
         }
+
+        // Agora remove só essa imagem do banco
+        $stmt = $pdo->prepare("DELETE FROM imagens WHERE id = ?");
+        $stmt->execute([$idImagem]);
+    }
+}
+
         
         // Processa novas imagens
         if (!empty($_FILES['novas_imagens']['name'][0])) {

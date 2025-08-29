@@ -22,10 +22,6 @@ try {
     $stmt = $pdo->query("SELECT * FROM animes WHERE ativo = 1 ORDER BY nome");
     $animes = $stmt->fetchAll(PDO::FETCH_ASSOC);
     
-    // Debug: verificar se os dados foram carregados
-    echo "<!-- DEBUG: Categorias encontradas: " . count($categorias) . " -->\n";
-    echo "<!-- DEBUG: Animes encontrados: " . count($animes) . " -->\n";
-    
 } catch (Exception $e) {
     echo "<div class='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>";
     echo "Erro ao carregar dados básicos: " . htmlspecialchars($e->getMessage());
@@ -37,17 +33,8 @@ $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/admin/src/uploads/';
 $allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
 $maxSize = 2 * 1024 * 1024; // 2MB
 
-// Debug: verificar diretório de upload
-echo "<!-- DEBUG: Diretório de upload: " . $uploadDir . " -->\n";
-echo "<!-- DEBUG: Diretório existe: " . (is_dir($uploadDir) ? 'SIM' : 'NÃO') . " -->\n";
-
 // Processa o formulário
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    echo "<!-- DEBUG: Formulário enviado -->\n";
-    
-    // Debug: mostrar dados recebidos
-    echo "<!-- DEBUG: Dados POST: " . print_r($_POST, true) . " -->\n";
-    
     $nome = trim($_POST['nome']);
     $descricao = trim($_POST['descricao']);
     $preco = floatval($_POST['preco']);
@@ -57,7 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $anime_id = !empty($_POST['anime_id']) ? intval($_POST['anime_id']) : null;
     $cores = !empty($_POST['cores']) ? implode(',', $_POST['cores']) : null;
     $tags = trim($_POST['tags']);
-    $imagens = [];
+    $todasImagens = [];
 
     // Validações básicas
     if (empty($nome)) {
@@ -82,65 +69,71 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
         }
 
-        // Valida e move as imagens enviadas
-        if (!empty($_FILES['imagens']['name'][0]) && $_FILES['imagens']['name'][0] != '') {
-            echo "<!-- DEBUG: Processando imagens -->\n";
-            
+        // Processa imagens gerais (sem cor específica)
+        if (!empty($_FILES['imagens']['name'][0])) {
             foreach ($_FILES['imagens']['tmp_name'] as $key => $tmpName) {
-                // Verifica se o arquivo foi enviado sem erro
-                if ($_FILES['imagens']['error'][$key] !== UPLOAD_ERR_OK) {
-                    throw new Exception("Erro no upload da imagem: " . $_FILES['imagens']['name'][$key] . " (Código: " . $_FILES['imagens']['error'][$key] . ")");
-                }
-                
-                $fileType = $_FILES['imagens']['type'][$key];
-                $fileSize = $_FILES['imagens']['size'][$key];
-                $fileName = $_FILES['imagens']['name'][$key];
-                
-                echo "<!-- DEBUG: Processando arquivo: $fileName, Tipo: $fileType, Tamanho: $fileSize -->\n";
-                
-                // Validação
-                if (!in_array($fileType, $allowedTypes)) {
-                    throw new Exception("Tipo de arquivo não permitido: " . $fileName . " (Tipo: " . $fileType . ")");
-                }
-                
-                if ($fileSize > $maxSize) {
-                    throw new Exception("Arquivo muito grande: " . $fileName . " (Tamanho: " . round($fileSize/1024/1024, 2) . "MB)");
-                }
-                
-                // Gera nome único para o arquivo
-                $ext = pathinfo($fileName, PATHINFO_EXTENSION);
-                $uniqueFileName = uniqid() . '.' . $ext;
-                $destino = $uploadDir . $uniqueFileName;
-                
-                echo "<!-- DEBUG: Movendo para: $destino -->\n";
-                
-                if (move_uploaded_file($tmpName, $destino)) {
-                    // Caminho relativo para salvar no banco
-                    $imagens[] = 'admin/src/uploads/' . $uniqueFileName;
-                    echo "<!-- DEBUG: Imagem salva: " . end($imagens) . " -->\n";
-                } else {
-                    throw new Exception("Erro ao mover arquivo: " . $fileName . " para " . $destino);
+                if ($_FILES['imagens']['error'][$key] === UPLOAD_ERR_OK) {
+                    $fileType = $_FILES['imagens']['type'][$key];
+                    $fileSize = $_FILES['imagens']['size'][$key];
+                    $fileName = $_FILES['imagens']['name'][$key];
+                    
+                    if (in_array($fileType, $allowedTypes) && $fileSize <= $maxSize) {
+                        $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                        $uniqueFileName = uniqid() . '_default.' . $ext;
+                        $destino = $uploadDir . $uniqueFileName;
+                        
+                        if (move_uploaded_file($tmpName, $destino)) {
+                            $todasImagens[] = [
+                                'caminho' => 'admin/src/uploads/' . $uniqueFileName, 
+                                'cor' => 'default'
+                            ];
+                        }
+                    }
                 }
             }
         }
 
-        echo "<!-- DEBUG: Iniciando transação -->\n";
-        
+        // Processa imagens por cor
+        $coresSelecionadas = !empty($_POST['cores']) ? $_POST['cores'] : [];
+        foreach ($coresSelecionadas as $cor) {
+            $campoImagem = "imagens_" . str_replace('#', '', $cor);
+            
+            if (!empty($_FILES[$campoImagem]['name'][0])) {
+                foreach ($_FILES[$campoImagem]['tmp_name'] as $key => $tmpName) {
+                    if ($_FILES[$campoImagem]['error'][$key] === UPLOAD_ERR_OK) {
+                        $fileType = $_FILES[$campoImagem]['type'][$key];
+                        $fileSize = $_FILES[$campoImagem]['size'][$key];
+                        $fileName = $_FILES[$campoImagem]['name'][$key];
+                        
+                        if (in_array($fileType, $allowedTypes) && $fileSize <= $maxSize) {
+                            $ext = pathinfo($fileName, PATHINFO_EXTENSION);
+                            $uniqueFileName = uniqid() . '_' . $cor . '.' . $ext;
+                            $destino = $uploadDir . $uniqueFileName;
+                            
+                            if (move_uploaded_file($tmpName, $destino)) {
+                                $todasImagens[] = [
+                                    'caminho' => 'admin/src/uploads/' . $uniqueFileName, 
+                                    'cor' => $cor
+                                ];
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
         // Inicia transação
         $pdo->beginTransaction();
         
-        // Cadastra o produto com todas as colunas
+        // Define imagem principal (primeira imagem ou null)
+        $imagem_principal = !empty($todasImagens) ? $todasImagens[0]['caminho'] : null;
+        
+        // Cadastra o produto
         $sql = "INSERT INTO produtos (nome, descricao, preco, preco_original, desconto, categoria_id, anime_id, cores, tags, status, ativo, imagem_principal) 
                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 'ativo', 1, ?)";
         
-        // Define imagem principal (primeira imagem ou null)
-        $imagem_principal = !empty($imagens) ? $imagens[0] : null;
-        
-        echo "<!-- DEBUG: SQL: $sql -->\n";
-        echo "<!-- DEBUG: Parâmetros: nome=$nome, desc=$descricao, preco=$preco, preco_orig=$preco_original, desc=$desconto, cat=$categoria_id, anime=$anime_id, cores=$cores, tags=$tags, img=$imagem_principal -->\n";
-        
         $stmt = $pdo->prepare($sql);
-        $result = $stmt->execute([
+        $stmt->execute([
             $nome, 
             $descricao, 
             $preco, 
@@ -153,85 +146,62 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imagem_principal
         ]);
         
-        if (!$result) {
-            $errorInfo = $stmt->errorInfo();
-            throw new Exception("Erro na execução da query de produtos: " . $errorInfo[2]);
-        }
-        
         $produto_id = $pdo->lastInsertId();
-        echo "<!-- DEBUG: Produto inserido com ID: $produto_id -->\n";
         
-        // Debug: verifica se o produto foi inserido
-        if (!$produto_id) {
-            throw new Exception("Erro ao inserir produto no banco de dados - ID não retornado");
+        if (!$produto_id || $produto_id == 0) {
+            throw new Exception("Erro: ID do produto não foi gerado.");
         }
-        
+
         // Cadastra as imagens no banco
-        if (!empty($imagens)) {
-            echo "<!-- DEBUG: Cadastrando " . count($imagens) . " imagens -->\n";
-            
-            foreach ($imagens as $ordem => $caminho) {
-                $sql_img = "INSERT INTO imagens (produto_id, url_imagem, ordem) VALUES (?, ?, ?)";
+        if (!empty($todasImagens)) {
+            foreach ($todasImagens as $ordem => $dadosImg) {
+                $sql_img = "INSERT INTO imagens (produto_id, url_imagem, ordem, cor) VALUES (?, ?, ?, ?)";
                 $stmt_img = $pdo->prepare($sql_img);
-                $result = $stmt_img->execute([$produto_id, $caminho, $ordem + 1]);
-                
-                if (!$result) {
-                    $errorInfo = $stmt_img->errorInfo();
-                    throw new Exception("Erro ao inserir imagem no banco: " . $caminho . " - " . $errorInfo[2]);
-                }
-                
-                echo "<!-- DEBUG: Imagem inserida: $caminho -->\n";
+                $stmt_img->execute([
+                    $produto_id, 
+                    $dadosImg['caminho'], 
+                    $ordem + 1, 
+                    $dadosImg['cor']
+                ]);
             }
         }
         
         // Cadastra estoque
         $tamanhos = ['PP', 'P', 'M', 'G', 'GG', 'XG'];
-        $estoque_inserido = 0;
         
         foreach ($tamanhos as $tamanho) {
-            if (!empty($_POST["estoque_$tamanho"]) && $_POST["estoque_$tamanho"] > 0) {
-                $quantidade = intval($_POST["estoque_$tamanho"]);
+            $campoEstoque = "estoque_$tamanho";
+            if (!empty($_POST[$campoEstoque]) && $_POST[$campoEstoque] > 0) {
+                $quantidade = intval($_POST[$campoEstoque]);
                 $sql_est = "INSERT INTO estoque (produto_id, tamanho, quantidade) VALUES (?, ?, ?)";
                 $stmt_est = $pdo->prepare($sql_est);
-                $result = $stmt_est->execute([$produto_id, $tamanho, $quantidade]);
-                
-                if (!$result) {
-                    $errorInfo = $stmt_est->errorInfo();
-                    throw new Exception("Erro ao inserir estoque: " . $errorInfo[2]);
-                }
-                
-                $estoque_inserido++;
-                echo "<!-- DEBUG: Estoque inserido: $tamanho = $quantidade -->\n";
+                $stmt_est->execute([$produto_id, $tamanho, $quantidade]);
             }
         }
-        
-        echo "<!-- DEBUG: Total de estoques inseridos: $estoque_inserido -->\n";
         
         // Confirma transação
         $pdo->commit();
-        echo "<!-- DEBUG: Transação confirmada com sucesso -->\n";
         
-        echo "<script>alert('Produto cadastrado com sucesso! ID: $produto_id'); window.location.href='listar_produtos.php';</script>";
+        echo "<script>
+            alert('Produto cadastrado com sucesso! ID: $produto_id'); 
+            window.location.href='listar_produtos.php';
+        </script>";
+        exit;
         
     } catch (Exception $e) {
-        echo "<!-- DEBUG: Erro capturado: " . $e->getMessage() . " -->\n";
-        
         // Desfaz transação
         if ($pdo->inTransaction()) {
             $pdo->rollback();
-            echo "<!-- DEBUG: Transação desfeita -->\n";
         }
         
         // Remove imagens já salvas em caso de erro
-        foreach ($imagens as $caminho) {
-            $fullPath = $uploadDir . basename($caminho);
+        foreach ($todasImagens as $dadosImagem) {
+            $fullPath = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/' . $dadosImagem['caminho'];
             if (file_exists($fullPath)) {
                 unlink($fullPath);
-                echo "<!-- DEBUG: Imagem removida: $fullPath -->\n";
             }
         }
         
-        echo "<script>alert('Erro: " . addslashes($e->getMessage()) . "');</script>";
         echo "<div class='bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4'>";
         echo "Erro: " . htmlspecialchars($e->getMessage());
         echo "</div>";
@@ -260,13 +230,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             background-color: #1f2937;
             border-left: 4px solid #ef4444;
         }
-        .file-upload {
-            border: 2px dashed #d1d5db;
-            transition: all 0.3s;
-        }
-        .file-upload:hover {
-            border-color: #9ca3af;
-        }
+
+
     </style>
 </head>
 <body class="bg-gray-50 font-sans">
@@ -323,7 +288,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <?php endif; ?>
             
             <!-- Formulário -->
-            <form method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-md p-6">
+<form action="cadastrar_produto.php" method="POST" enctype="multipart/form-data" class="bg-white rounded-lg shadow-md p-6">
                 <!-- Seção Básica -->
                 <div class="mb-8">
                     <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Informações Básicas</h2>
@@ -355,6 +320,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                 <?php endforeach; ?>
                             </select>
                         </div>
+
+                                 <div class="md:col-span-2">
+                            <label class="block text-gray-700 mb-2">Tags</label>
+                            <input type="text" name="tags" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Anime, Naruto, Dragon Ball">
+                                </div>
                         <?php endif; ?>
                         <?php if (!empty($animes)): ?>
                         <div>
@@ -371,7 +341,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                             <label class="block text-gray-700 mb-2">Descrição</label>
                             <textarea name="descricao" rows="3" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"></textarea>
                         </div>
-                        <div class="md:col-span-2">
+                        <!-- <div class="md:col-span-2">
                             <label class="block text-gray-700 mb-2">Cores Disponíveis</label>
                             <div class="flex flex-wrap gap-4">
                                 <label class="flex items-center">
@@ -391,32 +361,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                                     <span class="w-6 h-6 bg-red-500 rounded-full mr-2"></span> Vermelho
                                 </label>
                             </div>
-                        </div>
+                        </div> -->
 
-                         <div class="md:col-span-2">
-                            <label class="block text-gray-700 mb-2">Tags</label>
-                            <input type="text" name="tags" class="w-full p-3 border rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500" placeholder="Ex: Anime, Naruto, Dragon Ball">
-                                </div>
+                
                         
                     </div>
                 </div>
                 
                 <!-- Seção Imagens -->
                 <div class="mb-8">
-                    <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Imagens do Produto</h2>
                     <div id="imagens-container">
-                        <div class="file-upload mb-4 rounded-lg p-6 text-center">
-                            <i class="fas fa-cloud-upload-alt text-3xl text-gray-400 mb-2"></i>
-                            <p class="text-gray-600 mb-2">Arraste e solte imagens aqui ou clique para selecionar</p>
-                            <input type="file" name="imagens[]" accept="image/jpeg, image/png, image/webp" class="hidden" id="file-input" multiple>
-                            <button type="button" onclick="document.getElementById('file-input').click()" class="bg-gray-200 hover:bg-gray-300 text-gray-800 px-4 py-2 rounded-lg mt-2">
-                                Selecionar Arquivos
-                            </button>
-                            <p class="text-xs text-gray-500 mt-3">Formatos aceitos: JPEG, PNG, WebP | Máx. 2MB cada</p>
-                        </div>
+                        <div class="file-upload "></div>
                     </div>
-                    <div id="preview-container" class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4"></div>
                 </div>
+
+        <div class="md:col-span-2">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800 border-b pb-2">Imagens do Produto</h2>
+            <div class="flex flex-wrap gap-4">
+                <label class="flex items-center">
+                    <input type="checkbox" name="cores[]" value="preto" class="mr-2 cor-checkbox">
+                    <span class="w-6 h-6 bg-black rounded-full mr-2"></span> Preto
+                </label>
+                <label class="flex items-center">
+                    <input type="checkbox" name="cores[]" value="branco" class="mr-2 cor-checkbox">
+                    <span class="w-6 h-6 bg-white border rounded-full mr-2"></span> Branco
+                </label>
+                <input type="file" name="imagens[]" accept="image/jpeg, image/png, image/webp" class="hidden" id="file-input" multiple>
+                <div id="preview-container" class="grid grid-cols-2 md:grid-cols-4 gap-5 mt-2"></div>
+            </div>
+        </div>
+
+
+<div id="uploads-cores" class="mt-4 space-y-6"></div>
+
+<div class="mb-10" ></div>
                 
                 <!-- Seção Estoque -->
                 <div class="mb-8">
@@ -498,7 +476,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             fileInput.dispatchEvent(event);
         });
 
-        //TROCA DE CORRR
+        const uploadsContainer = document.getElementById('uploads-cores');
+const corCheckboxes = document.querySelectorAll('.cor-checkbox');
+
+corCheckboxes.forEach(checkbox => {
+    checkbox.addEventListener('change', () => {
+        const cor = checkbox.value;
+        const id = `upload-${cor}`;
+
+        if (checkbox.checked) {
+            // Cria a área de upload dessa cor
+            const div = document.createElement('div');
+            div.id = id;
+            div.innerHTML = `
+                <h3 class="font-semibold mb-2">Imagens - Cor ${cor.charAt(0).toUpperCase() + cor.slice(1)}</h3>
+                <input type="file" name="imagens_${cor}[]" multiple 
+                       accept="image/jpeg,image/png,image/webp" 
+                       class="block w-full p-2 border rounded">
+            `;
+            uploadsContainer.appendChild(div);
+        } else {
+            // Remove a área de upload se desmarcar a cor
+            const div = document.getElementById(id);
+            if (div) div.remove();
+        }
+    });
+});
+
 
         
     </script>

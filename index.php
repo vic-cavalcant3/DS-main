@@ -297,112 +297,131 @@ $categorias = $categorias_stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <!-- Products Grid -->
     <!-- Products Grid -->
-    <section class="py-12 bg-gray-50">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="text-center mb-12">
-                <h2 class="text-3xl font-bold text-gray-900 mb-4">
-                    <span class="text-gray-900">PRODUTOS EM</span>
-                    <span class="text-red-500">DESTAQUE</span>
-                </h2>
-                <p class="text-gray-600 text-lg max-w-2xl mx-auto">
-                    Confira nossa seleção especial de camisetas de anime
-                </p>
-            </div>
+   <section class="py-12 bg-gray-50">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="text-center mb-12">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">
+                <span class="text-gray-900">PRODUTOS EM</span>
+                <span class="text-red-500">DESTAQUE</span>
+            </h2>
+            <p class="text-gray-600 text-lg max-w-2xl mx-auto">
+                Confira nossa seleção especial de camisetas de anime
+            </p>
+        </div>
 
-            <?php if (empty($produtos_com_imagens)): ?>
-                <div class="text-center py-12">
-                    <i class="fas fa-tshirt text-4xl text-gray-300 mb-4"></i>
-                    <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum produto cadastrado</h3>
-                    <p class="text-gray-600">Em breve teremos produtos incríveis para você!</p>
-                </div>
-            <?php else: ?>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
-                    <?php foreach ($produtos_com_imagens as $produto): ?>
-                        <div class="product-card bg-white rounded-lg overflow-hidden shadow-md fade-in">
-                            <div class="relative group product-image-container">
-                                <?php
-                                    // Definir o caminho da imagem principal corretamente
-                                    $src = '/ds-main/client/src/no-image.png';
-                                    if (!empty($produto['imagem_principal_src'])) {
-                                        $img = $produto['imagem_principal_src'];
-                                        if (strpos($img, 'admin/src/uploads/') !== false) {
-                                            $src = '/ds-main/' . $img;
-                                        } else {
-                                            $src = '/ds-main/admin/src/uploads/' . basename($img);
-                                        }
+        <?php if (empty($produtos_com_imagens)): ?>
+            <div class="text-center py-12">
+                <i class="fas fa-tshirt text-4xl text-gray-300 mb-4"></i>
+                <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum produto cadastrado</h3>
+                <p class="text-gray-600">Em breve teremos produtos incríveis para você!</p>
+            </div>
+        <?php else: ?>
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                <?php foreach ($produtos_com_imagens as $produto): ?>
+                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-md fade-in">
+                        <div class="relative group product-image-container">
+                            <?php
+                                // Definir o caminho da imagem principal corretamente
+                                $src = '/ds-main/client/src/no-image.png';
+                                if (!empty($produto['imagem_principal_src'])) {
+                                    $img = $produto['imagem_principal_src'];
+                                    if (strpos($img, 'admin/src/uploads/') !== false) {
+                                        $src = '/ds-main/' . $img;
+                                    } else {
+                                        $src = '/ds-main/admin/src/uploads/' . basename($img);
                                     }
-                                ?>
+                                }
+                            ?>
+                            <!-- Link clicável na imagem -->
+                            <a href="/ds-main/produto/<?= $produto['id'] ?>" class="block">
                                 <img src="<?= htmlspecialchars($src) ?>"
                                      alt="<?= htmlspecialchars($produto['nome']) ?>"
-                                     class="product-image w-full h-80 object-cover"
+                                     class="product-image w-full h-80 object-cover hover:scale-105 transition-transform duration-300"
                                      onerror="this.src='/ds-main/client/src/no-image.png'">
-                                
-                                <!-- Hover (se houver outra imagem) -->
-                                <?php
-                                    // Exibe segunda imagem como hover se existir
-                                    if (!empty($produto['imagens_por_cor'])) {
-                                        // Primeiro grupo de cor
-                                        $first_cor = array_key_first($produto['imagens_por_cor']);
-                                        $imgs_da_cor = $produto['imagens_por_cor'][$first_cor];
-                                        if (isset($imgs_da_cor[1])) {
-                                            $hover_img = $imgs_da_cor[1];
-                                            if (strpos($hover_img, 'admin/src/uploads/') !== false) {
-                                                $hover_src = '/ds-main/' . $hover_img;
-                                            } else {
-                                                $hover_src = '/ds-main/admin/src/uploads/' . basename($hover_img);
-                                            }
-                                            ?>
+                            </a>
+                            
+                            <!-- Hover (se houver outra imagem) -->
+                            <?php
+                                // Exibe segunda imagem como hover se existir
+                                if (!empty($produto['imagens_por_cor'])) {
+                                    // Primeiro grupo de cor
+                                    $first_cor = array_key_first($produto['imagens_por_cor']);
+                                    $imgs_da_cor = $produto['imagens_por_cor'][$first_cor];
+                                    if (isset($imgs_da_cor[1])) {
+                                        $hover_img = $imgs_da_cor[1];
+                                        if (strpos($hover_img, 'admin/src/uploads/') !== false) {
+                                            $hover_src = '/ds-main/' . $hover_img;
+                                        } else {
+                                            $hover_src = '/ds-main/admin/src/uploads/' . basename($hover_img);
+                                        }
+                                        ?>
+                                        <a href="/ds-main/produto/<?= $produto['id'] ?>" class="block absolute inset-0">
                                             <img src="<?= htmlspecialchars($hover_src) ?>"
                                                  alt="<?= htmlspecialchars($produto['nome']) ?> - Hover"
-                                                 class="product-image-hover w-full h-80 object-cover">
-                                            <?php
-                                        }
+                                                 class="product-image-hover w-full h-80 object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                                        </a>
+                                        <?php
                                     }
-                                ?>
+                                }
+                            ?>
 
-                                <script type="application/json" class="product-images-data">
-                                    <?= json_encode($produto['imagens_por_cor']) ?>
-                                </script>
+                            <script type="application/json" class="product-images-data">
+                                <?= json_encode($produto['imagens_por_cor']) ?>
+                            </script>
+                        </div>
+
+                        <div class="p-4">
+                            <!-- Nome do produto clicável -->
+                            <a href="/ds-main/produto/<?= $produto['id'] ?>" class="block">
+                                <h3 class="font-medium text-gray-900 mb-1 hover:text-red-600 transition-colors duration-200"><?= htmlspecialchars($produto['nome']) ?></h3>
+                            </a>
+                            <p class="text-gray-500 text-sm mb-3"><?= htmlspecialchars($produto['descricao']) ?></p>
+                            <?php if ($produto['anime_nome']): ?>
+                            <p class="text-gray-400 text-xs mb-2"><?= htmlspecialchars($produto['anime_nome']) ?></p>
+                            <?php endif; ?>
+
+                            <div class="flex flex-col mb-3">
+                                <?php if (!empty($produto['preco_original']) && $produto['preco_original'] > $produto['preco']): ?>
+                                    <span class="text-gray-400 text-sm line-through">
+                                        R$<?= number_format($produto['preco_original'], 2, ',', '.') ?>
+                                    </span>
+                                <?php endif; ?>
+                                <span class="font-bold text-gray-900">
+                                    R$<?= number_format($produto['preco'], 2, ',', '.') ?>
+                                </span>
                             </div>
 
-                            <div class="p-4">
-                                <h3 class="font-medium text-gray-900 mb-1"><?= htmlspecialchars($produto['nome']) ?></h3>
-                                <p class="text-gray-500 text-sm mb-3"><?= htmlspecialchars($produto['descricao']) ?></p>
-                                <p class="text-gray-400 text-xs mb-2"><?= htmlspecialchars($produto['anime_nome']) ?></p>
-
-                                <div class="flex flex-col">
-                                    <?php if (!empty($produto['preco_original']) && $produto['preco_original'] > $produto['preco']): ?>
-                                        <span class="text-gray-400 text-sm line-through">
-                                            R$<?= number_format($produto['preco_original'], 2, ',', '.') ?>
-                                        </span>
-                                    <?php endif; ?>
-                                    <span class="font-bold text-gray-900">
-                                        R$<?= number_format($produto['preco'], 2, ',', '.') ?>
-                                    </span>
-                                </div>
-
-                                <button class="add-to-cart bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300 mt-3"
+                            <div class="flex gap-2">
+                                <!-- Botão ver produto -->
+                                <a href="/ds-main/produto/<?= $produto['id'] ?>" 
+                                   class="flex-1 bg-gray-800 text-white px-3 py-2 rounded text-sm text-center hover:bg-gray-700 transition duration-300">
+                                    Ver Produto
+                                </a>
+                                
+                                <!-- Botão adicionar carrinho -->
+                                <button class="add-to-cart bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 transition duration-300"
                                         data-id="<?= $produto['id'] ?>"
                                         data-name="<?= htmlspecialchars($produto['nome']) ?>"
                                         data-price="<?= $produto['preco'] ?>"
                                         data-image="<?= htmlspecialchars($src) ?>">
-                                    Adicionar
+                                    <i class="fas fa-shopping-cart"></i>
                                 </button>
                             </div>
                         </div>
-                    <?php endforeach; ?>
-                </div>
+                    </div>
+                <?php endforeach; ?>
+            </div>
 
-                <div class="text-center mt-12">
-                    <a href="client/pages/produtos.php"
-                       class="inline-flex items-center px-6 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition duration-300">
-                        Ver Todos os Produtos
-                        <i class="fas fa-arrow-right ml-2"></i>
-                    </a>
-                </div>
-            <?php endif; ?>
-        </div>
-    </section>
+            <div class="text-center mt-12">
+                <a href="client/pages/produtos.php"
+                   class="inline-flex items-center px-6 py-3 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition duration-300">
+                    Ver Todos os Produtos
+                    <i class="fas fa-arrow-right ml-2"></i>
+                </a>
+            </div>
+        <?php endif; ?>
+    </div>
+</section>
 
 
     <!-- Newsletter -->

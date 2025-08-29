@@ -153,10 +153,17 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             letter-spacing: 1px;
         }
         
+
+        
         .product-card {
             transition: all 0.3s ease;
+            border-radius: 12px;
+            overflow: hidden;
+            width: 140%;
+            max-width: 380px;
+            margin: 0 auto;
         }
-        
+
         .product-card:hover {
             transform: translateY(-5px);
             box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
@@ -440,91 +447,112 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
                     <h3 class="text-lg font-medium text-gray-900 mb-2">Nenhum produto encontrado</h3>
                     <p class="text-gray-600">Tente ajustar os filtros para encontrar o que procura.</p>
                 </div>
-                <?php else: ?>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-                    <?php foreach ($produtos as $produto): ?>
-                    <div class="product-card bg-white rounded-lg overflow-hidden shadow-md fade-in">
-                        <div class="relative group">
-                            <?php 
-                            // Construir caminho correto da imagem
-                            $imagem_src = '';
-                            if ($produto['imagem_principal']) {
-                                // Se já contém o caminho completo admin/src/uploads/
-                                if (strpos($produto['imagem_principal'], 'admin/src/uploads/') !== false) {
-                                    $imagem_src = '/ds-main/' . $produto['imagem_principal'];
-                                } else {
-                                    // Se é apenas o nome do arquivo
-                                    $imagem_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_principal']);
-                                }
-                            } else {
-                                $imagem_src = '/ds-main/client/src/no-image.png'; // imagem padrão
-                            }
-                            ?>
-                            
-                            <img src="<?= $imagem_src ?>" 
-                                alt="<?= htmlspecialchars($produto['nome']) ?>" 
-                                class="w-full h-80 object-cover"
-                                onerror="this.src='/ds-main/client/src/no-image.png'">
-                            
-                            <?php if ($produto['imagem_hover']): ?>
-                                <?php 
-                                $imagem_hover_src = '';
-                                if (strpos($produto['imagem_hover'], 'admin/src/uploads/') !== false) {
-                                    $imagem_hover_src = '/ds-main/' . $produto['imagem_hover'];
-                                } else {
-                                    $imagem_hover_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_hover']);
-                                }
-                                ?>
-                                <img src="<?= $imagem_hover_src ?>" 
-                                    alt="<?= htmlspecialchars($produto['nome']) ?> - Hover" 
-                                    class="w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                            <?php endif; ?>
-                        </div>
-                        
-                        <div class="p-4">
-                            <h3 class="font-medium text-gray-900 mb-1"><?= htmlspecialchars($produto['nome']) ?></h3>
-                            <p class="text-gray-500 text-sm mb-3"><?= htmlspecialchars($produto['descricao']) ?></p>
-                            <p class="text-gray-400 text-xs mb-2"><?= htmlspecialchars($produto['anime_nome']) ?></p>
-                            
-                            <!-- Cores disponíveis -->
-                            <?php if ($produto['cores']): ?>
-                            <div class="flex space-x-2 mb-3">
-                                <?php 
-                                $cores = explode(',', $produto['cores']);
-                                foreach ($cores as $cor_item): 
-                                    $cor_item = trim($cor_item);
-                                    $cor_class = match($cor_item) {
-                                        'preto' => 'bg-black',
-                                        'branco' => 'bg-white border-gray-400',
-                                        'cinza' => 'bg-gray-500',
-                                        'vermelho' => 'bg-red-500',
-                                        default => 'bg-gray-300'
-                                    };
-                                ?>
-                                <div class="color-option w-6 h-6 rounded-full <?= $cor_class ?> border-2 border-gray-300 cursor-pointer" 
-                                     data-color="<?= $cor_item ?>" title="<?= ucfirst($cor_item) ?>"></div>
-                                <?php endforeach; ?>
-                            </div>
-                            <?php endif; ?>
-                            
-                            <div class="flex justify-between items-center">
-                                <div class="flex flex-col">
-                                    <?php if ($produto['preco_original'] && $produto['preco_original'] > $produto['preco']): ?>
-                                    <span class="text-gray-400 text-sm line-through">R$<?= number_format($produto['preco_original'], 2, ',', '.') ?></span>
-                                    <?php endif; ?>
-                                    <span class="font-bold text-gray-900">R$<?= number_format($produto['preco'], 2, ',', '.') ?></span>
-                                </div>
-                                <button class="add-to-cart bg-red-600 text-white px-3 py-1 rounded text-sm hover:bg-red-700 transition duration-300"
-                                        data-id="<?= $produto['id'] ?>" 
-                                        data-name="<?= htmlspecialchars($produto['nome']) ?>" 
-                                        data-price="<?= $produto['preco'] ?>"
-                                        data-image="<?= htmlspecialchars($produto['imagem_principal']) ?>">
-                                    Adicionar
-                                </button>
-                            </div>
-                        </div>
+
+                
+              <?php else: ?>
+    <div class=" grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+        <?php foreach ($produtos as $produto): ?>
+            <div class="product-card bg-white rounded-lg overflow-hidden shadow-md fade-in">
+                <div class="relative group product-image-container">
+                    <?php 
+                    // Construir caminho correto da imagem
+                    $imagem_src = '/ds-main/client/src/no-image.png';
+                    if ($produto['imagem_principal']) {
+                        // Se já contém o caminho completo admin/src/uploads/
+                        if (strpos($produto['imagem_principal'], 'admin/src/uploads/') !== false) {
+                            $imagem_src = '/ds-main/' . $produto['imagem_principal'];
+                        } else {
+                            // Se é apenas o nome do arquivo
+                            $imagem_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_principal']);
+                        }
+                    }
+                    ?>
+                    
+                    <!-- Link clicável na imagem -->
+                    <a href="/ds-main/produto/<?= $produto['id'] ?>" class="block">
+                        <img src="<?= $imagem_src ?>" 
+                            alt="<?= htmlspecialchars($produto['nome']) ?>" 
+                            class="product-image w-full h-80 object-cover hover:scale-105 transition-transform duration-300"
+                            onerror="this.src='/ds-main/client/src/no-image.png'">
+                    </a>
+                    
+                    <?php if ($produto['imagem_hover']): ?>
+                        <?php 
+                        $imagem_hover_src = '';
+                        if (strpos($produto['imagem_hover'], 'admin/src/uploads/') !== false) {
+                            $imagem_hover_src = '/ds-main/' . $produto['imagem_hover'];
+                        } else {
+                            $imagem_hover_src = '/ds-main/admin/src/uploads/' . basename($produto['imagem_hover']);
+                        }
+                        ?>
+                        <!-- Link clicável na imagem hover -->
+                        <a href="/ds-main/produto/<?= $produto['id'] ?>" class="block absolute inset-0">
+                            <img src="<?= $imagem_hover_src ?>" 
+                                alt="<?= htmlspecialchars($produto['nome']) ?> - Hover" 
+                                class="product-image-hover w-full h-80 object-cover absolute top-0 left-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                        </a>
+                    <?php endif; ?>
+                </div>
+                
+                <div class="p-4">
+                    <!-- Nome do produto clicável -->
+                    <a href="/ds-main/produto/<?= $produto['id'] ?>" class="block">
+                        <h3 class="font-medium text-gray-900 mb-1 hover:text-red-600 transition-colors duration-200"><?= htmlspecialchars($produto['nome']) ?></h3>
+                    </a>
+                    <p class="text-gray-500 text-sm mb-3"><?= htmlspecialchars($produto['descricao']) ?></p>
+                    
+                    <?php if ($produto['anime_nome']): ?>
+                    <p class="text-gray-400 text-xs mb-2"><?= htmlspecialchars($produto['anime_nome']) ?></p>
+                    <?php endif; ?>
+                    
+                    <!-- Cores disponíveis -->
+                    <?php if ($produto['cores']): ?>
+                    <div class="flex space-x-2 mb-3">
+                        <?php 
+                        $cores = explode(',', $produto['cores']);
+                        foreach ($cores as $cor_item): 
+                            $cor_item = trim($cor_item);
+                            $cor_class = match($cor_item) {
+                                'preto' => 'bg-black',
+                                'branco' => 'bg-white border-gray-400',
+                                'cinza' => 'bg-gray-500',
+                                'vermelho' => 'bg-red-500',
+                                default => 'bg-gray-300'
+                            };
+                        ?>
+                        <div class="color-option w-6 h-6 rounded-full <?= $cor_class ?> border-2 border-gray-300 cursor-pointer" 
+                             data-color="<?= $cor_item ?>" title="<?= ucfirst($cor_item) ?>"></div>
+                        <?php endforeach; ?>
                     </div>
-                    <?php endforeach; ?>
+                    <?php endif; ?>
+                    
+                    <div class="flex flex-col mb-3">
+                        <?php if ($produto['preco_original'] && $produto['preco_original'] > $produto['preco']): ?>
+                        <span class="text-gray-400 text-sm line-through">R$<?= number_format($produto['preco_original'], 2, ',', '.') ?></span>
+                        <?php endif; ?>
+                        <span class="font-bold text-gray-900">R$<?= number_format($produto['preco'], 2, ',', '.') ?></span>
+                    </div>
+
+                    <div class="flex gap-2">
+                        <!-- Botão ver produto -->
+                        <a href="/ds-main/produto/<?= $produto['id'] ?>" 
+                           class="flex-1 bg-gray-800 text-white px-3 py-2 rounded text-sm text-center hover:bg-gray-700 transition duration-300">
+                            Ver Produto
+                        </a>
+                        
+                        <!-- Botão adicionar carrinho -->
+                        <button class="add-to-cart bg-red-600 text-white px-3 py-2 rounded text-sm hover:bg-red-700 transition duration-300"
+                                data-id="<?= $produto['id'] ?>" 
+                                data-name="<?= htmlspecialchars($produto['nome']) ?>" 
+                                data-price="<?= $produto['preco'] ?>"
+                                data-image="<?= htmlspecialchars($imagem_src) ?>">
+                            <i class="fas fa-shopping-cart"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        <?php endforeach; ?>
+    </div>
                 </div>
 
                 <!-- Pagination -->

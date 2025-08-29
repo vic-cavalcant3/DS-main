@@ -210,7 +210,7 @@ try {
                 <button class="tab-button py-2 px-4 border-b-2 border-transparent" data-tab="imagens">Imagens</button>
             </div>
 
-           <form id="form-editar" action="../utils/editar_produto.php" method="POST" class="space-y-6" enctype="multipart/form-data">   
+           <form id="form-editar" action="../utils/salvar_edicao.php" method="POST" class="space-y-6" enctype="multipart/form-data">   
                 <input type="hidden" name="id" id="editar-id">
 
                 <!-- Aba Informações Básicas -->
@@ -328,7 +328,13 @@ try {
                     <div>
                         <label class="block text-gray-700 font-semibold mb-2">Imagens Atuais</label>
                         <div id="imagens-atuais-container" class="grid grid-cols-2 md:grid-cols-4 gap-4">
-                            <!-- As imagens atuais serão carregadas aqui via JavaScript -->
+                           <div class="relative">
+    <img src="<?= $imagem['url_imagem'] ?>" class="rounded-lg shadow">
+    <label class="absolute top-2 right-2 bg-white p-1 rounded shadow">
+        <input type="checkbox" name="excluir_imagens[]" value="<?= $imagem['id'] ?>"> Excluir
+    </label>
+</div>
+
                         </div>
                     </div>
                 </div>
@@ -342,7 +348,7 @@ try {
         </div>
     </div>
 
-    <script>
+<script>
 // Sistema de abas
 document.querySelectorAll('.tab-button').forEach(button => {
     button.addEventListener('click', () => {
@@ -358,45 +364,51 @@ document.querySelectorAll('.tab-button').forEach(button => {
 const editarFileInput = document.getElementById('editar-file-input');
 const editarPreviewContainer = document.getElementById('editar-preview-container');
 
-editarFileInput.addEventListener('change', function() {
-    editarPreviewContainer.innerHTML = '';
-    if (this.files) {
-        Array.from(this.files).forEach(file => {
-            if (file.type.startsWith('image/') && file.size <= 2 * 1024 * 1024) {
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const preview = document.createElement('div');
-                    preview.className = 'relative';
-                    preview.innerHTML = `
-                        <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
-                        <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
-                            <i class="fas fa-times text-xs"></i>
-                        </button>
-                    `;
-                    preview.querySelector('button').addEventListener('click', () => preview.remove());
-                    editarPreviewContainer.appendChild(preview);
+if (editarFileInput) {
+    editarFileInput.addEventListener('change', function() {
+        editarPreviewContainer.innerHTML = '';
+        if (this.files) {
+            Array.from(this.files).forEach(file => {
+                if (file.type.startsWith('image/') && file.size <= 2 * 1024 * 1024) {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const preview = document.createElement('div');
+                        preview.className = 'relative';
+                        preview.innerHTML = `
+                            <img src="${e.target.result}" class="w-full h-32 object-cover rounded-lg">
+                            <button type="button" class="absolute top-1 right-1 bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center">
+                                <i class="fas fa-times text-xs"></i>
+                            </button>
+                        `;
+                        preview.querySelector('button').addEventListener('click', () => preview.remove());
+                        editarPreviewContainer.appendChild(preview);
+                    }
+                    reader.readAsDataURL(file);
                 }
-                reader.readAsDataURL(file);
-            }
-        });
-    }
-});
+            });
+        }
+    });
+}
 
 // Drag and drop
 const editarUploadArea = document.querySelector('#tab-imagens .file-upload');
-editarUploadArea.addEventListener('dragover', e => {
-    e.preventDefault();
-    editarUploadArea.classList.add('border-red-400', 'bg-red-50');
-});
-editarUploadArea.addEventListener('dragleave', () => {
-    editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
-});
-editarUploadArea.addEventListener('drop', e => {
-    e.preventDefault();
-    editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
-    editarFileInput.files = e.dataTransfer.files;
-    editarFileInput.dispatchEvent(new Event('change'));
-});
+if (editarUploadArea) {
+    editarUploadArea.addEventListener('dragover', e => {
+        e.preventDefault();
+        editarUploadArea.classList.add('border-red-400', 'bg-red-50');
+    });
+    editarUploadArea.addEventListener('dragleave', () => {
+        editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
+    });
+    editarUploadArea.addEventListener('drop', e => {
+        e.preventDefault();
+        editarUploadArea.classList.remove('border-red-400', 'bg-red-50');
+        if (editarFileInput) {
+            editarFileInput.files = e.dataTransfer.files;
+            editarFileInput.dispatchEvent(new Event('change'));
+        }
+    });
+}
 
 // Abrir modal e preencher campos
 document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
@@ -414,7 +426,7 @@ document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
                 alert('Erro: ' + data.error);
                 return;
             }
-
+            
             // Campos básicos
             document.getElementById('editar-id').value = data.id;
             document.getElementById('editar-nome').value = data.nome || '';
@@ -423,18 +435,18 @@ document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
             document.getElementById('editar-desconto').value = data.desconto || '';
             document.getElementById('editar-descricao').value = data.descricao || '';
             document.getElementById('editar-tags').value = data.tags || '';
-
+            
             // Categoria e Anime
             if (data.categoria_id) document.getElementById('editar-categoria_id').value = data.categoria_id;
             if (data.anime_id) document.getElementById('editar-anime_id').value = data.anime_id;
-
+            
             // Cores
             if (Array.isArray(data.cores)) {
                 document.querySelectorAll('.editar-cor').forEach(chk => {
                     chk.checked = data.cores.includes(chk.value);
                 });
             }
-
+            
             // Estoque
             if (data.estoque) {
                 Object.keys(data.estoque).forEach(tam => {
@@ -442,42 +454,35 @@ document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
                     if (input) input.value = data.estoque[tam];
                 });
             }
-
-            // Imagens atuais
+            
+            // CORREÇÃO: Carregamento das imagens atuais
             const imagensContainer = document.getElementById('imagens-atuais-container');
             imagensContainer.innerHTML = '';
+            
+            // Remove inputs hidden anteriores de exclusão
+            document.querySelectorAll('input[name="excluir_imagens[]"]').forEach(input => {
+                if (input.type === 'hidden') {
+                    input.remove();
+                }
+            });
+            
             if (data.imagens && data.imagens.length > 0) {
                 data.imagens.forEach(imagem => {
                     const nomeImagem = imagem.caminho ? basename(imagem.caminho) : imagem.url_imagem ? basename(imagem.url_imagem) : '';
                     const imagePath = '/ds-main/admin/src/uploads/' + nomeImagem;
                     const imgDiv = document.createElement('div');
-                    imgDiv.className = 'relative';
+                    imgDiv.className = 'relative group';
                     imgDiv.innerHTML = `
                         <div class="bg-white rounded-lg shadow-md overflow-hidden">
                             <img src="${imagePath}" alt="Imagem do produto" class="w-full h-32 object-cover"
                                  onerror="this.onerror=null; this.src='https://via.placeholder.com/200x200?text=Imagem+Não+Encontrada'">
-                            <div class="absolute bottom-2 right-2 flex space-x-1">
-                                <button type="button" class="bg-red-500 text-white rounded-full w-6 h-6 flex items-center justify-center excluir-imagem" data-imagem-id="${imagem.id}">
-                                    <i class="fas fa-times text-xs"></i>
-                                </button>
-                            </div>
+                            <label class="absolute top-2 right-2 bg-white bg-opacity-90 p-1 rounded shadow cursor-pointer hover:bg-opacity-100 transition-all">
+                                <input type="checkbox" name="excluir_imagens[]" value="${imagem.id}" class="mr-1">
+                                <span class="text-xs text-red-600 font-medium">Excluir</span>
+                            </label>
                         </div>
-                        <input type="hidden" name="imagens_atuais[]" value="${imagem.id}">
                     `;
                     imagensContainer.appendChild(imgDiv);
-                });
-
-                // Botão excluir imagens
-                document.querySelectorAll('.excluir-imagem').forEach(button => {
-                    button.addEventListener('click', function() {
-                        const imagemId = this.getAttribute('data-imagem-id');
-                        const input = document.createElement('input');
-                        input.type = 'hidden';
-                        input.name = 'excluir_imagens[]';
-                        input.value = imagemId;
-                        document.getElementById('form-editar').appendChild(input);
-                        this.closest('.relative').remove();
-                    });
                 });
             } else {
                 imagensContainer.innerHTML = `
@@ -487,10 +492,16 @@ document.querySelectorAll('.abrir-modal-editar').forEach(btn => {
                     <p class="col-span-full text-gray-500 text-center">Nenhuma imagem encontrada para este produto.</p>
                 `;
             }
-
+            
+            // Limpa preview de novas imagens
+            editarPreviewContainer.innerHTML = '';
+            if (editarFileInput) {
+                editarFileInput.value = '';
+            }
+            
             // Mostra modal
             document.getElementById('modal-editar').classList.remove('hidden');
-
+            
         } catch (error) {
             console.error('Erro ao carregar dados do produto:', error);
             alert('Erro ao carregar dados do produto: ' + error.message);
@@ -508,7 +519,28 @@ document.querySelectorAll('.sidebar-link').forEach(link => {
     if (link.href === window.location.href) link.classList.add('active');
 });
 
-        
-    </script>
+// CSS adicional para as abas
+const style = document.createElement('style');
+style.textContent = `
+    .tab-content {
+        display: none;
+    }
+    .tab-content.active {
+        display: block;
+    }
+    .tab-button.active {
+        border-color: #dc2626 !important;
+        color: #dc2626 !important;
+        border-bottom-width: 2px !important;
+    }
+    .tab-button {
+        transition: all 0.2s ease;
+    }
+    .tab-button:hover {
+        color: #dc2626;
+    }
+`;
+document.head.appendChild(style);
+</script>
 </body>
 </html>

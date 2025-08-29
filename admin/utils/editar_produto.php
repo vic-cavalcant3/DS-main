@@ -134,17 +134,38 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
         // Upload de novas imagens
         if (!empty($_FILES['imagens']['name'][0])) {
-            $uploadDir = '../uploads/produtos/';
-            foreach ($_FILES['imagens']['tmp_name'] as $index => $tmpName) {
-                $fileName = time() . '_' . basename($_FILES['imagens']['name'][$index]);
-                $targetFile = $uploadDir . $fileName;
-                if (move_uploaded_file($tmpName, $targetFile)) {
-                    $sql_img = "INSERT INTO imagens_produtos (produto_id, caminho) VALUES (?, ?)";
-                    $stmt_img = $pdo->prepare($sql_img);
-                    $stmt_img->execute([$id, $fileName]);
-                }
+    $uploadDir = $_SERVER['DOCUMENT_ROOT'] . '/ds-main/admin/src/uploads/';
+    
+    // cria a pasta se não existir
+    if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0755, true);
+    }
+
+    // pega a ordem máxima atual
+    $sqlMaxOrdem = "SELECT MAX(ordem) as max_ordem FROM imagens WHERE produto_id = ?";
+    $stmtMaxOrdem = $pdo->prepare($sqlMaxOrdem);
+    $stmtMaxOrdem->execute([$id]);
+    $maxOrdem = $stmtMaxOrdem->fetch(PDO::FETCH_ASSOC);
+    $ordem = $maxOrdem['max_ordem'] ? $maxOrdem['max_ordem'] + 1 : 1;
+
+    foreach ($_FILES['imagens']['tmp_name'] as $index => $tmpName) {
+        if ($_FILES['imagens']['error'][$index] === UPLOAD_ERR_OK) {
+            $ext = pathinfo($_FILES['imagens']['name'][$index], PATHINFO_EXTENSION);
+            $uniqueFileName = uniqid() . '.' . $ext;
+            $targetFile = $uploadDir . $uniqueFileName;
+
+            if (move_uploaded_file($tmpName, $targetFile)) {
+                $caminho = 'admin/src/uploads/' . $uniqueFileName;
+
+                $sql_img = "INSERT INTO imagens (produto_id, url_imagem, ordem) VALUES (?, ?, ?)";
+                $stmt_img = $pdo->prepare($sql_img);
+                $stmt_img->execute([$id, $caminho, $ordem]);
+                $ordem++;
             }
         }
+    }
+}
+
 
         $pdo->commit();
         header('Location: ../pages/listar_produtos.php?success=Produto+atualizado+com+sucesso');
