@@ -430,6 +430,8 @@ $produtos_relacionados = $stmt_relacionados->fetchAll(PDO::FETCH_ASSOC);
             gap: 12px;
             margin-top: 25px;
         }
+
+        
     </style>
 </head>
 

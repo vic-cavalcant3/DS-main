@@ -283,11 +283,11 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <div id="mobile-menu" class="hidden md:hidden bg-black border-t border-gray-800">
             <div class="px-2 pt-2 pb-3 space-y-1">
-                <a href="client/pages/produtos.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Produtos</a>
-                <a href="client/pages/masculino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
-                <a href="client/pages/feminino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
-                <a href="client/pages/infantil.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
-                <a href="client/pages/ajuda.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Central de Ajuda</a>
+                <a href="produtos.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Produtos</a>
+                <a href="masculino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Masculino</a>
+                <a href="feminino.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Feminino</a>
+                <a href="infantil.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Infantil</a>
+                <a href="ajuda.php" class="block px-3 py-3 text-base font-medium text-white hover:bg-gray-900">Central de Ajuda</a>
             </div>
         </div>
     </nav>
@@ -768,7 +768,8 @@ $animes = $animes_stmt->fetchAll(PDO::FETCH_ASSOC);
             </div>
         </div>
     </footer>
- <script>
+
+<script>
 
 // Mobile menu toggle - com verificação se existe
 const mobileMenuButton = document.getElementById('mobile-menu-button');
